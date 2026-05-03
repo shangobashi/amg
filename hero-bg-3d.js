@@ -12,6 +12,7 @@
   return { w: window.innerWidth, h: window.innerHeight };
  }
  var heroSize = getHeroSize();
+ console.log('[Afriplan] heroSize:', heroSize.w, 'x', heroSize.h, '| window:', window.innerWidth, 'x', window.innerHeight);
  var isMobile = heroSize.w < 768;
  var renderer = new THREE.WebGLRenderer({
   canvas: canvasEl, alpha: false, antialias: !isMobile, powerPreference: 'high-performance'
