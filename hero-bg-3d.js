@@ -1,352 +1,220 @@
 /**
- * Afriplan — Hero 3D Background
- * Simplified topographic ring field — dark + bright amber contour rings
- * Uses Three.js CDN: https://unpkg.com/three@0.158.0/build/three.min.js
+ * Afriplan - Hero 3D Background
+ * Golden Screenshot Forensic Restoration v2
  */
 (function () {
   'use strict';
-
   var canvasEl = document.getElementById('heroBgCanvas');
   if (!canvasEl) return;
-
-  // ── Hero-aware sizing ──────────────────────────────────────────────────────
   var heroEl = document.querySelector('.hero');
   function getHeroSize() {
-    if (heroEl) {
-      return { w: heroEl.offsetWidth, h: heroEl.offsetHeight };
-    }
+    if (heroEl) return { w: heroEl.offsetWidth, h: heroEl.offsetHeight };
     return { w: window.innerWidth, h: window.innerHeight };
   }
   var heroSize = getHeroSize();
-
-  // ── Renderer ───────────────────────────────────────────────────────────────
   var isMobile = heroSize.w < 768;
-
   var renderer = new THREE.WebGLRenderer({
-    canvas: canvasEl,
-    alpha: false,
-    antialias: !isMobile,
-    powerPreference: 'high-performance'
+    canvas: canvasEl, alpha: false, antialias: !isMobile, powerPreference: 'high-performance'
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.0 : 2));
   renderer.setSize(heroSize.w, heroSize.h);
-  renderer.setClearColor(0x0A0A08, 1);
-
-  // ── Scene & Camera ─────────────────────────────────────────────────────────
-  var scene  = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(
-    50, heroSize.w / heroSize.h, 0.1, 1000
-  );
+  renderer.setClearColor(0x050505, 1);
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(50, heroSize.w / heroSize.h, 0.1, 1000);
   camera.position.set(0, 0, 90);
   camera.lookAt(0, 0, 0);
-
-  // ── Layer 1: Deep aurora plane ─────────────────────────────────────────────
-  const auroraVert = `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  (function () {
+    var bw = Math.max(2, Math.floor(heroSize.w * 0.25));
+    var bh = Math.max(2, Math.floor(heroSize.h * 0.25));
+    var bc = document.createElement('canvas');
+    bc.width = bw; bc.height = bh;
+    var ctx = bc.getContext('2d');
+    var g = ctx.createRadialGradient(bw * 0.5, bh * 0.38, 0, bw * 0.5, bh * 0.38, bw * 0.55);
+    g.addColorStop(0.0, 'rgba(26,18,8,0.55)');
+    g.addColorStop(0.4, 'rgba(18,12,5,0.25)');
+    g.addColorStop(0.75, 'rgba(5,5,5,0.08)');
+    g.addColorStop(1.0, 'rgba(5,5,5,0.00)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, bw, bh);
+    var tex = new THREE.CanvasTexture(bc);
+    var bg = new THREE.Mesh(
+      new THREE.PlaneGeometry(heroSize.w * 1.1, heroSize.h * 1.1),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })
+    );
+    bg.position.z = -60;
+    scene.add(bg);
+  })();
+  (function () {
+    var count = isMobile ? 120 : 300;
+    var maxX = heroSize.w, maxY = heroSize.h * 0.58;
+    var palette = [[74,50,16],[100,65,20],[146,92,18],[196,129,31],[212,175,55]];
+    var pW = [0.40, 0.30, 0.18, 0.09, 0.03];
+    var rng = 9183;
+    function rand() { rng = (rng * 1664525 + 1013904223) & 0xffffffff; return (rng >>> 0) / 0xffffffff; }
+    var sData = [];
+    for (var i = 0; i < count; i++) {
+      var xf = rand(), yf = rand();
+      var cx = Math.abs(xf - 0.5) * 2.0;
+      yf = yf * (1.0 - Math.pow(cx, 2.0) * 0.6);
+      var sx = Math.floor(xf * maxX), sy = Math.floor(yf * maxY);
+      var r = rand(), ci = 0, cum = 0;
+      for (var j = 0; j < pW.length; j++) { cum += pW[j]; if (r < cum) { ci = j; break; } }
+      var sz = rand() < 0.72 ? 1 : 2;
+      sData.push({ x: sx, y: sy, c: palette[ci], sz: sz, a: 0.28 + rand() * 0.56 });
     }
-  `;
-  const auroraFrag = `
-    uniform float uTime;
-    varying vec2 vUv;
-
-    float hash(vec2 p) {
-      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    var sc = document.createElement('canvas');
+    sc.width = 4; sc.height = count * 4;
+    var sctx = sc.getContext('2d');
+    for (var i = 0; i < count; i++) {
+      var d = sData[i];
+      sctx.fillStyle = 'rgba(' + d.c[0] + ',' + d.c[1] + ',' + d.c[2] + ',' + d.a + ')' ;
+      sctx.fillRect(0, i * 4, d.sz, d.sz);
     }
-    float noise(vec2 p) {
-      vec2 i = floor(p); vec2 f = fract(p);
-      vec2 u = f * f * (3.0 - 2.0 * f);
-      return mix(mix(hash(i), hash(i + vec2(1,0)), u.x),
-                 mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), u.x), u.y);
+    var starTex = new THREE.CanvasTexture(sc);
+    starTex.magFilter = THREE.NearestFilter;
+    starTex.minFilter = THREE.NearestFilter;
+    var sGeo = new THREE.BufferGeometry();
+    var sPos = new Float32Array(count * 3), sUV = new Float32Array(count * 2);
+    for (var i = 0; i < count; i++) {
+      sPos[i * 3] = sData[i].x - heroSize.w * 0.5;
+      sPos[i * 3 + 1] = sData[i].y - heroSize.h * 0.5;
+      sPos[i * 3 + 2] = -(Math.random() * 20);
+      sUV[i * 2] = (sData[i].sz === 1 ? 0.5 : 1.5) / 4;
+      sUV[i * 2 + 1] = (i * 4 + 0.5) / (count * 4);
     }
-    float fbm(vec2 p) {
-      float v = 0.0; float a = 0.5;
-      for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.1; a *= 0.5; }
-      return v;
-    }
-
-    void main() {
-      vec2 uv = vUv;
-      float t = uTime * 0.06;
-
-      float n1 = fbm(uv * 3.0 + vec2(t, t * 0.5));
-      float n2 = fbm(uv * 5.0 - vec2(t * 0.4, t * 0.7) + n1 * 0.5);
-
-      // Wide amber bands
-      float band1 = sin(uv.y * 6.0 + n2 * 4.0 + t) * 0.5 + 0.5;
-      float band2 = sin(uv.x * 3.0 - n1 * 2.0 + t * 0.6) * 0.5 + 0.5;
-
-      vec3 colA = vec3(0.961, 0.620, 0.043); // #F59E0B
-      vec3 colB = vec3(0.851, 0.467, 0.024); // #D97706
-      vec3 void_col = vec3(0.039, 0.039, 0.031); // near-black
-
-      float intensity = band1 * band2 * n2;
-      vec3 col = mix(void_col, colA, clamp(intensity * 0.6, 0.0, 0.6));
-      col = mix(col, colB, band2 * 0.3);
-
-      // Center glow
-      float cg = 1.0 - smoothstep(0.0, 0.55, length((uv - 0.5) * vec2(1.1, 1.4)));
-      col += vec3(0.961, 0.620, 0.043) * cg * 0.08;
-
-      // Vignette
-      float vig = 1.0 - smoothstep(0.3, 0.9, length(uv - 0.5) * 1.6);
-      col *= vig * 0.85;
-
-      gl_FragColor = vec4(col, 1.0);
-    }
-  `;
-  const auroraMat = new THREE.ShaderMaterial({
-    vertexShader: auroraVert,
-    fragmentShader: auroraFrag,
-    uniforms: { uTime: { value: 0 } },
-    depthWrite: false,
-    depthTest: false
+    sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+    sGeo.setAttribute('uv', new THREE.BufferAttribute(sUV, 2));
+    var sMat = new THREE.PointsMaterial({
+      size: isMobile ? 2.0 : 2.5,
+      map: starTex, transparent: true, depthWrite: false,
+      blending: THREE.AdditiveBlending, sizeAttenuation: false
+    });
+    scene.add(new THREE.Points(sGeo, sMat));
+  })();
+  var tUni = { uTime: { value: 0.0 } };
+  var topoVert = [
+    'varying float vH; varying vec2 vUv; uniform float uTime;',
+    'void main(){',
+    '  vUv = uv; vec3 pos = position; float h = 0.0;',
+    '  float nx = pos.x * 0.007, ny = pos.y * 0.009;',
+    '  h = sin(nx*4.1+ny*3.3)*0.8 + sin(nx*7.7-ny*5.9)*0.4 + sin(nx*13.0+ny*11.0)*0.2;',
+    '  float lM = smoothstep(0.42,0.28,vUv.x)*smoothstep(0.62,0.45,vUv.y);',
+    '  float lb = sin(vUv.y*10.0+vUv.x*5.5+1.2)*0.5+0.5;',
+    '  float lc = sin(vUv.y*14.0+lb*3.14)*0.5+0.5;',
+    '  h += lM*(lb*2.5+lc*1.5-2.0);',
+    '  float pX = smoothstep(0.28,0.38,vUv.x)*smoothstep(0.72,0.62,vUv.x);',
+    '  float pY = smoothstep(0.50,0.42,vUv.y)*smoothstep(0.30,0.38,vUv.y);',
+    '  h = mix(h,0.0,pX*pY*0.85);',
+    '  float bX = smoothstep(0.28,0.38,vUv.x)*smoothstep(0.72,0.62,vUv.x);',
+    '  float bY = smoothstep(0.34,0.22,vUv.y);',
+    '  float a1 = sin(vUv.x*9.0+0.5)*0.5+0.5;',
+    '  float a2 = sin(vUv.x*6.5-1.2)*0.5+0.5;',
+    '  h += bX*bY*(a1*1.2+a2*0.8-0.8);',
+    '  float rdx = vUv.x-0.74, rdy = vUv.y-0.42;',
+    '  float rdist = sqrt(rdx*rdx*2.2+rdy*rdy*1.8);',
+    '  float rings = sin(rdist*22.0)*0.5+0.5;',
+    '  float rM = smoothstep(0.42,0.28,vUv.x)*smoothstep(0.58,0.42,vUv.y);',
+    '  h += rM*rings*2.0;',
+    '  float fX = (vUv.x-0.60)/0.35, fY = (0.22-vUv.y)/0.22;',
+    '  float iF = smoothstep(0.0,0.05,fY)*smoothstep(1.0,0.3,fX)*smoothstep(0.0,0.1,fX)*smoothstep(1.0,0.5,fY);',
+    '  float sl = sin((fX-fY)*3.14159*1.5*6.0+fY*4.0)*0.5+0.5;',
+    '  float sc2 = sin(fX*8.0+fY*5.0)*0.5+0.5;',
+    '  h += iF*(sl*1.8+sc2*0.9-1.0);',
+    '  vH = h; pos.z += h * 2.5;',
+    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos,1.0);',
+    '}'
+  ].join(chr(10));
+  var topoFrag = [
+    'varying float vH; varying vec2 vUv; uniform float uTime;',
+    'void main(){',
+    '  vec3 lc = vec3(0.82,0.52,0.10), bc = vec3(0.04,0.035,0.03);',
+    '  float hv = clamp(vH*0.15+0.5,0.0,1.0);',
+    '  float cont = sin(vH*3.8)*0.5+0.5; cont = smoothstep(0.35,0.65,cont);',
+    '  float alpha = mix(0.38,0.92,cont*hv);',
+    '  gl_FragColor = vec4(mix(bc,lc,cont*0.85),alpha);',
+    '}'
+  ].join(chr(10));
+  var topoMat = new THREE.ShaderMaterial({
+    vertexShader: topoVert, fragmentShader: topoFrag,
+    uniforms: tUni, wireframe: true, transparent: true, depthWrite: false
   });
-  const auroraPlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(320, 220),
-    auroraMat
-  );
-  auroraPlane.position.z = -50;
-  scene.add(auroraPlane);
-
-  // ── Layer 2: Topographic mesh (bright amber rings) ────────────────────────
-  const topoVert = `
-    uniform float uTime;
-    varying float vH;
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      vec3 pos = position;
-      float h = sin(pos.x * 0.05 + uTime * 0.12) * 3.0
-              + sin(pos.y * 0.07 + uTime * 0.09) * 2.0
-              + sin((pos.x + pos.y) * 0.03 + uTime * 0.07) * 4.0;
-      pos.z += h;
-      vH = h;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-    }
-  `;
-  const topoFrag = `
-    varying float vH;
-    varying vec2 vUv;
-    uniform float uTime;
-    void main() {
-      float c = sin(vH * 2.8 + uTime * 0.1) * 0.5 + 0.5;
-      c = smoothstep(0.42, 0.58, c);
-      vec3 lineCol = vec3(0.961, 0.620, 0.043);
-      vec3 baseCol = vec3(0.035, 0.033, 0.030);
-      float alpha = mix(0.5, 0.95, c);
-      gl_FragColor = vec4(mix(baseCol, lineCol, c * 0.85), alpha);
-    }
-  `;
-  const topoMat = new THREE.ShaderMaterial({
-    vertexShader: topoVert,
-    fragmentShader: topoFrag,
-    uniforms: { uTime: { value: 0 } },
-    wireframe: true,
-    transparent: true,
-    depthWrite: false
-  });
-  const topoMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(200, 130, 70, 50),
-    topoMat
-  );
-  topoMesh.rotation.x = -Math.PI / 2.4;
-  topoMesh.position.set(0, -25, -35);
+  var topoMesh = new THREE.Mesh(new THREE.PlaneGeometry(260, 160, 90, 60), topoMat);
+  topoMesh.rotation.x = -Math.PI / 2.5;
+  topoMesh.position.set(0, -22, -32);
   scene.add(topoMesh);
-
-  // ── Layer 3: Floating crystal wireframes ───────────────────────────────────
-  const crystalDefs = [
-    { geo: new THREE.IcosahedronGeometry(8, 0),   x: -52, y:  22, z: -22, rx: 0.0012, ry: 0.0018, rz: 0.0008 },
-    { geo: new THREE.OctahedronGeometry(5.5, 0),   x:  55, y: -12, z: -32, rx: 0.0018, ry: 0.0012, rz: 0.0015 },
-    { geo: new THREE.IcosahedronGeometry(4.5, 0),  x:  18, y:  35, z: -12, rx: 0.0022, ry: 0.0008, rz: 0.0018 },
-    { geo: new THREE.OctahedronGeometry(6.5, 0),   x: -28, y: -28, z:  -8, rx: 0.0010, ry: 0.0022, rz: 0.0012 },
-  ];
-
-  // [FIXED] Floating crystals removed — replaced by star field
-  const crystalMeshes = []; // was 4 IcosahedronGeometry/OctahedronGeometry wireframes
-
-  // ── Layer 4: Attractor nodes ────────────────────────────────────────────────
-  var nodeDefs = [
-    { x: -38, y:  12, z: -18 },
-    { x:  32, y: -18, z: -28 },
-    { x:   8, y:  28, z: -10 },
-  ];
-  var attractors = nodeDefs.map(function(nd) {
-    // Core
-    var coreMat = new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.7 });
-    var core = new THREE.Mesh(new THREE.SphereGeometry(0.9, 12, 12), coreMat);
-    core.position.set(nd.x, nd.y, nd.z);
-    // Halo
-    var haloMat = new THREE.MeshBasicMaterial({ color: 0xD97706, transparent: true, opacity: 0.12, side: THREE.DoubleSide });
-    var halo = new THREE.Mesh(new THREE.TorusGeometry(5, 0.12, 8, 32), haloMat);
-    halo.position.set(nd.x, nd.y, nd.z);
-    halo.rotation.x = Math.random() * Math.PI;
-    halo.rotation.y = Math.random() * Math.PI;
-    // Vertical beam
-    var beamMat = new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.03 });
-    var beam = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 100, 4), beamMat);
-    beam.position.set(nd.x, nd.y - 50, nd.z);
-    core.userData = { halo: halo, beam: beam };
-    halo.userData = { core: core };
-    core.renderOrder = 5;
-    halo.renderOrder = 4;
-    scene.add(core); scene.add(halo); scene.add(beam);
-    return core;
-  });
-
-  // ── Layer 5: Particle field ─────────────────────────────────────────────────
-  var N = isMobile ? 1200 : 8000;
-  var pPos = new Float32Array(N * 3);
-  var pCol = new Float32Array(N * 3);
-  var pScl = new Float32Array(N);
-  var pVel = new Float32Array(N * 3);
-
-  for (var i = 0; i < N; i++) {
-    var i3 = i * 3;
-    pPos[i3]     = (Math.random() - 0.5) * 180;
-    pPos[i3 + 1] = (Math.random() - 0.5) * 110;
-    pPos[i3 + 2] = (Math.random() - 0.5) * 90 - 15;
-    var c = Math.random() > 0.5 ? new THREE.Color(0xF59E0B) : new THREE.Color(0xC9A454);
-    var jit = 0.75 + Math.random() * 0.5;
-    pCol[i3]     = c.r * jit;
-    pCol[i3 + 1] = c.g * jit;
-    pCol[i3 + 2] = c.b * jit;
-    pScl[i] = 0.5 + Math.random() * 1.5;
-    pVel[i3]     = (Math.random() - 0.5) * 0.01;
-    pVel[i3 + 1] = (Math.random() - 0.5) * 0.008;
-    pVel[i3 + 2] = (Math.random() - 0.5) * 0.005;
+  function addIco(x, y, z, r, op) {
+    op = op || 0.18;
+    var m = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(r, 0),
+      new THREE.MeshBasicMaterial({ color: 0xC9943A, wireframe: true, transparent: true, opacity: op, depthWrite: false })
+    );
+    m.position.set(x, y, z); scene.add(m);
   }
-
-  var pGeo = new THREE.BufferGeometry();
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
-  pGeo.setAttribute('size',     new THREE.BufferAttribute(pScl, 1));
-
-  var pMat = new THREE.PointsMaterial({
-    size: 1.2,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.75,
-    sizeAttenuation: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
+  function addTorus(x, y, z, sr, tr, op) {
+    op = op || 0.14;
+    var s = new THREE.Mesh(
+      new THREE.SphereGeometry(sr, 8, 6),
+      new THREE.MeshBasicMaterial({ color: 0xC9943A, wireframe: true, transparent: true, opacity: op * 0.8, depthWrite: false })
+    );
+    s.position.set(x, y, z); scene.add(s);
+    var t = new THREE.Mesh(
+      new THREE.TorusGeometry(tr, 0.25, 4, 20),
+      new THREE.MeshBasicMaterial({ color: 0xD4AF37, wireframe: true, transparent: true, opacity: op, depthWrite: false })
+    );
+    t.position.set(x, y, z);
+    t.rotation.x = Math.PI * 0.3;
+    t.rotation.z = Math.PI * 0.15;
+    scene.add(t);
+  }
+  addIco(-55, 20, -22, 9, 0.16);
+  addTorus(-48, -5, -28, 2.5, 5.0, 0.13);
+  addIco(52, 28, -28, 6.5, 0.15);
+  addIco(30, 12, -18, 4.5, 0.14);
+  addTorus(-5, 30, -38, 2.0, 4.2, 0.12);
+  addIco(-32, 38, -35, 3.5, 0.12);
+  var nodeDefs = [
+    { x: -38, y: 8, z: -18 },
+    { x: 42, y: 5, z: -25 },
+    { x: 12, y: 28, z: -30 },
+    { x: -18, y: -8, z: -15 },
+    { x: 55, y: -18, z: -35 },
+    { x: -60, y: 15, z: -40 },
+    { x: 28, y: 40, z: -45 }
+  ];
+  var attractors = nodeDefs.map(function (nd) {
+    var c = new THREE.Mesh(
+      new THREE.SphereGeometry(0.55, 6, 4),
+      new THREE.MeshBasicMaterial({ color: 0xD4AF37, transparent: true, opacity: 0.65, depthWrite: false })
+    );
+    c.position.set(nd.x, nd.y, nd.z); scene.add(c); return c;
   });
-  var particles = new THREE.Points(pGeo, pMat);
-  scene.add(particles);
-
-  // ── Mouse tracking ───────────────────────────────────────────────────────────
-  var mouse   = new THREE.Vector2(0, 0);
-  var damped  = new THREE.Vector2(0, 0);
-  document.addEventListener('mousemove', function(e) {
-    mouse.x = (e.clientX / window.innerWidth  - 0.5) * 2;
-    mouse.y = (e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  // ── Resize ─────────────────────────────────────────────────────────────────
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     var hs = getHeroSize();
-    var newIsMobile = hs.w < 768;
     camera.aspect = hs.w / hs.h;
     camera.updateProjectionMatrix();
     renderer.setSize(hs.w, hs.h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, newIsMobile ? 1.0 : 2));
   });
-
-  // ── Clock ─────────────────────────────────────────────────────────────────
-  var clock = new THREE.Clock();
-  var startTime = null;
-
-  // ── Render loop ─────────────────────────────────────────────────────────────
+  var clock = new THREE.Clock(), startTime = null;
   function animate(ts) {
     requestAnimationFrame(animate);
     if (startTime === null) startTime = ts;
-    var t   = (ts - startTime) / 1000;
-    var delta = clock.getDelta();
-
-    // Smooth mouse
-    damped.x += (mouse.x - damped.x) * 0.04;
-    damped.y += (mouse.y - damped.y) * 0.04;
-
-    // [FIXED] Aurora uTime locked — no aurora drift
-    auroraMat.uniforms.uTime.value = 0; // was animated: t
-    topoMat.uniforms.uTime.value   = t * 0.05; // [FIXED] slowed 20x — shimmer only
-
-    // [FIXED] Crystals removed — no animation needed
-    // crystalMeshes.forEach(function(cm) { ... }); // REMOVED
-
-    // Attractors
-    attractors.forEach(function(core, idx) {
-      var ud  = core.userData;
-      var halo = ud.halo;
-      var beam = ud.beam;
-      var pulse = 0.8 + 0.2 * Math.sin(t * 1.4 + idx * 2.1);
-      core.position.y = nodeDefs[idx].y + Math.sin(t * 0.4 + idx * 1.3) * 2;
-      core.material.opacity = 0.55 + 0.2 * pulse;
-      halo.rotation.z += 0.007 + idx * 0.002;
-      halo.rotation.x += 0.003;
-      // [FIXED] Attractor halos/beams minimized to near-invisible
-      halo.material.opacity = 0.015 + 0.01 * pulse;
-      beam.scale.y = 0.7 + 0.3 * pulse;
-      beam.material.opacity = 0.005 + 0.005 * pulse;
+    var t = (ts - startTime) / 1000;
+    tUni.uTime.value = t * 0.04;
+    attractors.forEach(function (c, i) {
+      c.material.opacity = 0.35 + 0.15 * (0.8 + 0.2 * Math.sin(t * 1.2 + i * 1.9));
     });
-
-    // Particles drift + mouse inertia
-    for (var i = 0; i < N; i++) {
-      var i3 = i * 3;
-      pPos[i3]     += pVel[i3];
-      pPos[i3 + 1] += pVel[i3 + 1];
-      pPos[i3 + 2] += pVel[i3 + 2];
-      // Wrap boundaries
-      if (pPos[i3]     >  90) pPos[i3]     = -90;
-      if (pPos[i3]     < -90) pPos[i3]     =  90;
-      if (pPos[i3 + 1] >  55) pPos[i3 + 1] = -55;
-      if (pPos[i3 + 1] < -55) pPos[i3 + 1] =  55;
-      if (pPos[i3 + 2] >  30) pPos[i3 + 2] = -75;
-      if (pPos[i3 + 2] < -75) pPos[i3 + 2] =  30;
-    }
-    pGeo.attributes.position.needsUpdate = true;
-
-    // [FIXED] Camera locked — no parallax drift
-    // Original: camera followed mouse with lerp
-    // camera.position.x += (damped.x * 4 - camera.position.x) * 0.03;
-    // camera.position.y += (-damped.y * 2.5 + 5 - camera.position.y) * 0.03;
-    camera.position.set(0, 0, 90);
-    camera.lookAt(0, 0, 0);
-
-    // [FIXED] Terrain mesh locked — no mouse sway
-    // Original: topoMesh.position.x = damped.x * 2;
-    //           topoMesh.position.y = -25 + damped.y * 1.5;
-    topoMesh.position.set(0, -25, -35);
-
     renderer.render(scene, camera);
   }
-
   requestAnimationFrame(animate);
-
-// [DEBUG PROOF MODE] — activate with ?debugMesh=1 in URL
-(function(){
-  var isDebug = window.location.search.includes('debugMesh=1');
-  if (isDebug) {
-    // Force terrain bright gold + full opacity
-    if (typeof topoMat !== 'undefined') {
-      topoMat.uniforms.uTime && (topoMat.uniforms.uTime.value = 0);
-      topoMat.wireframe = true;
-      topoMat.transparent = false;
-      topoMat.opacity = 1.0;
-      // Override fragment shader to bright gold
-      topoMat.fragmentShader = 'varying float vH; void main(){ gl_FragColor = vec4(1.0, 0.85, 0.2, 1.0); }';
-      topoMat.needsUpdate = true;
-    }
-    // Hide hero content so mesh is clearly visible
+  (function () {
+    if (location.search.indexOf('debugMesh=1') === -1) return;
+    topoMat.wireframe = true; topoMat.transparent = false; topoMat.opacity = 1.0;
+    topoMat.fragmentShader = 'varying float vH; void main(){gl_FragColor=vec4(1.0,0.85,0.2,1.0);}';
+    topoMat.needsUpdate = true;
     var hc = document.querySelector('.hero__content');
     if (hc) hc.style.display = 'none';
-    // Raise canvas z-index
     var c = document.getElementById('heroBgCanvas');
     if (c) c.style.zIndex = '9999';
-    console.log('[DEBUG] Mesh proof mode active — terrain forced bright gold');
-  }
-})();
-
+    console.log('[DEBUG] Mesh proof mode active');
+  })();
 })();
