@@ -425,10 +425,10 @@ button {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 30% 50%, rgba(245, 158, 11, 0.13) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 70% 30%, rgba(201, 164, 84, 0.09) 0%, transparent 55%),
-    radial-gradient(ellipse 100% 40% at 50% 80%, rgba(245, 158, 11, 0.07) 0%, transparent 50%);
-  animation: aurora-drift-1 18s ease-in-out infinite alternate;
+    radial-gradient(ellipse 80% 60% at 30% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 70% 30%, rgba(201, 164, 84, 0.03) 0%, transparent 55%),
+    radial-gradient(ellipse 100% 40% at 50% 80%, rgba(245, 158, 11, 0.02) 0%, transparent 50%);
+  animation: none;
   opacity: 1;
 }
 
@@ -439,9 +439,9 @@ button {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 50% 70% at 65% 60%, rgba(217, 119, 6, 0.11) 0%, transparent 60%),
-    radial-gradient(ellipse 70% 50% at 25% 40%, rgba(201, 164, 84, 0.08) 0%, transparent 50%);
-  animation: aurora-drift-2 24s ease-in-out infinite alternate;
+    radial-gradient(ellipse 50% 70% at 65% 60%, rgba(217, 119, 6, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 25% 40%, rgba(201, 164, 84, 0.02) 0%, transparent 50%);
+  animation: none;
   opacity: 1;
 }
 
@@ -465,8 +465,6 @@ button {
     radial-gradient(2px 2px at 62% 12%, rgba(245, 158, 11, 0.6) 0%, transparent 100%),
     radial-gradient(1px 1px at 5%  50%, rgba(217, 119, 6, 0.7) 0%, transparent 100%);
   animation: particle-twinkle 4s ease-in-out infinite;
-
-  display: none !important;
 }
 
 /* ── Flowing energy band ──────────────────────────────────────── */
@@ -485,8 +483,6 @@ button {
   );
   background-size: 200% 100%;
   animation: energy-flow 12s linear infinite;
-
-  display: none !important;
 }
 
 /* ── Grain Texture Overlay ─────────────────────────────────────── */
@@ -498,8 +494,6 @@ button {
   z-index: 2;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 200px 200px;
-
-  display: none !important;
 }
 
 /* ── Glow overlay ────────────────────────────────────────────── */
@@ -513,8 +507,6 @@ button {
   );
   pointer-events: none;
   z-index: 1;
-
-  display: none !important;
 }
 
 /* ── CSS Keyframes ──────────────────────────────────────────────── */
@@ -661,8 +653,6 @@ button {
   pointer-events: none;
   z-index: 1;
   animation: glowPulse 5s ease-in-out infinite;
-
-  display: none !important;
 }
 
 /* Subtle grain texture layered over hero */
@@ -674,8 +664,6 @@ button {
   pointer-events: none;
   z-index: 1;
   mix-blend-mode: overlay;
-
-  display: none !important;
 }
 
 @keyframes glowPulse {
@@ -2007,9 +1995,7 @@ button {
   .hero__glow-overlay,
   .hero__grain-overlay {
     z-index: 1;
-  
-  display: none !important;
-}
+  }
 
   .hero__content {
     z-index: 2;
@@ -2277,29 +2263,4 @@ button {
   .stat-block__label {
     font-size: 0.75rem !important;
   }
-}
-/* [ADDED] Soft elliptical text scrim — no rectangle */
-.hero__content {
-  position: relative;
-  z-index: 10;
-}
-.hero__content::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 45%;
-  width: min(820px, 76vw);
-  height: 430px;
-  transform: translate(-50%, -50%);
-  z-index: -1;
-  pointer-events: none;
-  border-radius: 999px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0.48) 0%,
-    rgba(0, 0, 0, 0.30) 42%,
-    rgba(0, 0, 0, 0.10) 72%,
-    transparent 100%
-  );
-  filter: blur(22px);
 }

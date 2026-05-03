@@ -1,9 +1,10 @@
 /**
  * Afriplan — Hero 3D Background
  * Simplified topographic ring field — dark + bright amber contour rings
- * Uses Three.js CDN: https://unpkg.com/three@0.158.0/build/three.min.js
+ * Uses Three.js CDN: https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js
  */
 (function () {
+  console.log('[HERO] bisimwa WebGL starting...');
   'use strict';
 
   var canvasEl = document.getElementById('heroBgCanvas');
@@ -28,7 +29,8 @@
     antialias: !isMobile,
     powerPreference: 'high-performance'
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.0 : 2));
+  console.log('[HERO] Renderer created, WebGL? ' + !!renderer.getContext().getParameter && 'yes'); renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.0 : 2));
+  console.log('[HERO] Renderer ready, webgl: ' + !!renderer.getContext()); console.log('[HERO] Renderer info: ' + renderer.info.render.calls + ' calls');
   renderer.setSize(heroSize.w, heroSize.h);
   renderer.setClearColor(0x0A0A08, 1);
 
@@ -49,7 +51,7 @@
     }
   `;
   const auroraFrag = `
-    uniform float uTime;
+    uniform float uTime = 0.0; // LOCKED - no time drift
     varying vec2 vUv;
 
     float hash(vec2 p) {
@@ -69,7 +71,7 @@
 
     void main() {
       vec2 uv = vUv;
-      float t = uTime * 0.06;
+      float t = 0.0; // LOCKED
 
       float n1 = fbm(uv * 3.0 + vec2(t, t * 0.5));
       float n2 = fbm(uv * 5.0 - vec2(t * 0.4, t * 0.7) + n1 * 0.5);
@@ -113,15 +115,15 @@
 
   // ── Layer 2: Topographic mesh (bright amber rings) ────────────────────────
   const topoVert = `
-    uniform float uTime;
+    uniform float uTime = 0.0; // LOCKED - no time drift
     varying float vH;
     varying vec2 vUv;
     void main() {
       vUv = uv;
       vec3 pos = position;
-      float h = sin(pos.x * 0.05 + uTime * 0.12) * 3.0
-              + sin(pos.y * 0.07 + uTime * 0.09) * 2.0
-              + sin((pos.x + pos.y) * 0.03 + uTime * 0.07) * 4.0;
+      float h = sin(pos.x * 0.05) * 3.0; // LOCKED
+              + sin(pos.y * 0.07) * 2.0;
+              + sin((pos.x + pos.y) * 0.03) * 4.0;
       pos.z += h;
       vH = h;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
@@ -130,9 +132,9 @@
   const topoFrag = `
     varying float vH;
     varying vec2 vUv;
-    uniform float uTime;
+    uniform float uTime = 0.0; // LOCKED - no time drift
     void main() {
-      float c = sin(vH * 2.8 + uTime * 0.1) * 0.5 + 0.5;
+      float c = sin(vH * 2.8) * 0.5 + 0.5; // LOCKED
       c = smoothstep(0.42, 0.58, c);
       vec3 lineCol = vec3(0.961, 0.620, 0.043);
       vec3 baseCol = vec3(0.035, 0.033, 0.030);
@@ -164,8 +166,19 @@
     { geo: new THREE.OctahedronGeometry(6.5, 0),   x: -28, y: -28, z:  -8, rx: 0.0010, ry: 0.0022, rz: 0.0012 },
   ];
 
-  // [FIXED] Floating crystals removed — replaced by star field
-  const crystalMeshes = []; // was 4 IcosahedronGeometry/OctahedronGeometry wireframes
+  const crystalMeshes = crystalDefs.map(function(d) {
+    var mat = new THREE.MeshBasicMaterial({
+      color: 0xC9A454,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.015
+    });
+    var m = new THREE.Mesh(d.geo, mat);
+    m.position.set(d.x, d.y, d.z);
+    m.userData = { rx: d.rx, ry: d.ry, rz: d.rz, baseY: d.y };
+    scene.add(m);
+    return m;
+  });
 
   // ── Layer 4: Attractor nodes ────────────────────────────────────────────────
   var nodeDefs = [
@@ -269,12 +282,14 @@
     damped.x += (mouse.x - damped.x) * 0.04;
     damped.y += (mouse.y - damped.y) * 0.04;
 
-    // [FIXED] Aurora uTime locked — no aurora drift
-    auroraMat.uniforms.uTime.value = 0; // was animated: t
-    topoMat.uniforms.uTime.value   = t * 0.05; // [FIXED] slowed 20x — shimmer only
+    // Auroras
+    // AURORA LOCKED
+    // auroraMat.uniforms.uTime.value = 0;
+    // TOPO LOCKED
+    // topoMat.uniforms.uTime.value = 0;
 
-    // [FIXED] Crystals removed — no animation needed
-    // crystalMeshes.forEach(function(cm) { ... }); // REMOVED
+    // CRYSTALS REMOVED - no floating polyhedra
+    // crystalMeshes removed entirely
 
     // Attractors
     attractors.forEach(function(core, idx) {
@@ -284,12 +299,11 @@
       var pulse = 0.8 + 0.2 * Math.sin(t * 1.4 + idx * 2.1);
       core.position.y = nodeDefs[idx].y + Math.sin(t * 0.4 + idx * 1.3) * 2;
       core.material.opacity = 0.55 + 0.2 * pulse;
-      halo.rotation.z += 0.007 + idx * 0.002;
-      halo.rotation.x += 0.003;
-      // [FIXED] Attractor halos/beams minimized to near-invisible
-      halo.material.opacity = 0.015 + 0.01 * pulse;
+      halo.rotation.z += 0.000; // MINIMIZED
+      halo.rotation.x += 0.000;
+      halo.material.opacity = 0.01 + 0.005 * pulse; // nearly invisible
       beam.scale.y = 0.7 + 0.3 * pulse;
-      beam.material.opacity = 0.005 + 0.005 * pulse;
+      beam.material.opacity = 0.025 + 0.02 * pulse;
     });
 
     // Particles drift + mouse inertia
@@ -308,45 +322,17 @@
     }
     pGeo.attributes.position.needsUpdate = true;
 
-    // [FIXED] Camera locked — no parallax drift
-    // Original: camera followed mouse with lerp
-    // camera.position.x += (damped.x * 4 - camera.position.x) * 0.03;
-    // camera.position.y += (-damped.y * 2.5 + 5 - camera.position.y) * 0.03;
-    camera.position.set(0, 0, 90);
+    // Parallax on camera
+    // CAMERA LOCKED - no parallax drift
+    camera.position.set(0, 5, 90);
     camera.lookAt(0, 0, 0);
 
-    // [FIXED] Terrain mesh locked — no mouse sway
-    // Original: topoMesh.position.x = damped.x * 2;
-    //           topoMesh.position.y = -25 + damped.y * 1.5;
+    // Slight mesh sway
+    // MESH LOCKED - no mouse sway
     topoMesh.position.set(0, -25, -35);
 
-    renderer.render(scene, camera);
+    console.log('[HERO] Render call, meshes: ' + scene.children.length + ', camera pos: ' + camera.position.x + ',' + camera.position.y + ',' + camera.position.z); renderer.render(scene, camera);
   }
 
   requestAnimationFrame(animate);
-
-// [DEBUG PROOF MODE] — activate with ?debugMesh=1 in URL
-(function(){
-  var isDebug = window.location.search.includes('debugMesh=1');
-  if (isDebug) {
-    // Force terrain bright gold + full opacity
-    if (typeof topoMat !== 'undefined') {
-      topoMat.uniforms.uTime && (topoMat.uniforms.uTime.value = 0);
-      topoMat.wireframe = true;
-      topoMat.transparent = false;
-      topoMat.opacity = 1.0;
-      // Override fragment shader to bright gold
-      topoMat.fragmentShader = 'varying float vH; void main(){ gl_FragColor = vec4(1.0, 0.85, 0.2, 1.0); }';
-      topoMat.needsUpdate = true;
-    }
-    // Hide hero content so mesh is clearly visible
-    var hc = document.querySelector('.hero__content');
-    if (hc) hc.style.display = 'none';
-    // Raise canvas z-index
-    var c = document.getElementById('heroBgCanvas');
-    if (c) c.style.zIndex = '9999';
-    console.log('[DEBUG] Mesh proof mode active — terrain forced bright gold');
-  }
-})();
-
 })();
