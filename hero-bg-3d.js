@@ -8,8 +8,10 @@
  if (!canvasEl) return;
  var heroEl = document.querySelector('.hero');
  function getHeroSize() {
-  if (heroEl) return { w: heroEl.offsetWidth, h: heroEl.offsetHeight };
-  return { w: window.innerWidth, h: window.innerHeight };
+  var ww = window.innerWidth, wh = window.innerHeight;
+  if (ww > 0 && wh > 0) return { w: ww, h: wh };
+  if (heroEl && heroEl.offsetWidth > 0) return { w: heroEl.offsetWidth, h: heroEl.offsetHeight };
+  return { w: 1280, h: 720 };
  }
  var heroSize = getHeroSize();
  console.log('[Afriplan] heroSize:', heroSize.w, 'x', heroSize.h, '| window:', window.innerWidth, 'x', window.innerHeight);
