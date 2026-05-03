@@ -1,432 +1,440 @@
-/**
- * Afriplan — Hero Geological Intelligence Map
- * WebGL/Three.js reconstruction of Screenshot 2026-05-02 224224.png
- * Priority: dominant animated amber triangular geological survey mesh.
- */
+/* Afriplan Hero Background — deterministic Canvas2D geological intelligence field
+   Path B recovery: replaces unstable WebGL/polyhedra pipeline with fixed, seeded 2D render.
+   Version: 20260503-new-session-recovery-01-canvas2d
+*/
 (function () {
   'use strict';
 
+  var VERSION = '20260503-new-session-recovery-01-canvas2d';
   var canvas = document.getElementById('heroBgCanvas');
   if (!canvas) return;
+  var hero = document.querySelector('.hero') || canvas.parentElement || document.body;
+  var ctx = canvas.getContext('2d', { alpha: true });
+  if (!ctx) return;
 
-  function boot() {
-    if (!window.THREE) { setTimeout(boot, 30); return; }
-    var THREE = window.THREE;
-    var hero = document.querySelector('.hero') || canvas.parentElement || document.body;
-    var destroyed = false;
-    var clock = new THREE.Clock();
-    var size = { w: 1, h: 1 };
-    var isMobile = false;
-    var mouse = new THREE.Vector2();
-    var damped = new THREE.Vector2();
+  canvas.classList.add('hero-mesh-canvas');
+  canvas.setAttribute('data-renderer', 'canvas2d-geological-intelligence');
+  canvas.setAttribute('data-version', VERSION);
 
-    function readSize() {
-      var r = hero.getBoundingClientRect();
-      size.w = Math.max(320, Math.round(r.width || window.innerWidth));
-      size.h = Math.max(560, Math.round(r.height || window.innerHeight * 0.94));
-      isMobile = size.w < 768;
-    }
-    readSize();
+  var GOLD = {
+    base: [126, 78, 10],
+    mid: [170, 109, 22],
+    strong: [210, 146, 34],
+    hot: [224, 160, 48]
+  };
 
-    var renderer;
-    try {
-      renderer = new THREE.WebGLRenderer({
-        canvas: canvas,
-        alpha: false,
-        antialias: false,
-        powerPreference: 'high-performance',
-        preserveDrawingBuffer: false
-      });
-    } catch (err) {
-      startCanvasFallback('webgl-constructor-failed');
-      return;
-    }
-    renderer.setClearColor(0x020202, 1);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.35));
-    renderer.setSize(size.w, size.h, false);
-    if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
+  var starPalette = [
+    { color: [120, 76, 14], alpha: 0.38, weight: 0.45 },
+    { color: [146, 92, 18], alpha: 0.50, weight: 0.28 },
+    { color: [170, 109, 22], alpha: 0.62, weight: 0.17 },
+    { color: [196, 129, 31], alpha: 0.74, weight: 0.08 },
+    { color: [224, 160, 48], alpha: 0.84, weight: 0.02 }
+  ];
 
-    var scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x020202, 120, 360);
-
-    var camera = new THREE.PerspectiveCamera(44, size.w / size.h, 0.1, 720);
-    camera.position.set(0, 43, 158);
-    camera.lookAt(0, -58, -42);
-
-    // ── black/gold atmospheric underlay ─────────────────────────────────────
-    var bgUniforms = { uTime: { value: 0 }, uAspect: { value: size.w / size.h }, uMouse: { value: new THREE.Vector2() } };
-    var bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
-      depthWrite: false,
-      depthTest: false,
-      uniforms: bgUniforms,
-      vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.0,1.0); }',
-      fragmentShader: [
-        'precision mediump float;',
-        'varying vec2 vUv; uniform float uTime; uniform float uAspect; uniform vec2 uMouse;',
-        'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
-        'float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);}',
-        'float fbm(vec2 p){float v=0.;float a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p*=2.04;a*=.5;}return v;}',
-        'void main(){',
-        ' vec2 p=(vUv-.5)*vec2(uAspect,1.0);',
-        ' float d=length(p-vec2(uMouse.x*.035,-.02+uMouse.y*.02));',
-        ' float n=fbm(vUv*3.2+vec2(uTime*.012,-uTime*.010));',
-        ' vec3 col=vec3(.008,.008,.007);',
-        ' col += vec3(.62,.36,.055)*smoothstep(.72,.03,d)*(.22+n*.08);',
-        ' col += vec3(.82,.50,.09)*smoothstep(.50,.03,abs(p.y+p.x*.14-.09))*0.035;',
-        ' col *= 1.0-smoothstep(.42,1.02,d)*.88;',
-        ' gl_FragColor=vec4(col,1.0);',
-        '}'
-      ].join('\n')
-    }));
-    bg.renderOrder = -100;
-    scene.add(bg);
-
-    // ── WebGL screen-space geological topology pass ─────────────────────────
-    // This pass makes the survey mesh visually dominant: triangular topology,
-    // left serpentine seams, center angular plateau, lower arc, right deposit rings.
-    var screenTerrainUniforms = { uTime: { value: 0 }, uAspect: { value: size.w / size.h }, uMouse: { value: new THREE.Vector2() } };
-    var screenTerrain = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      depthTest: false,
-      blending: THREE.AdditiveBlending,
-      uniforms: screenTerrainUniforms,
-      vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.0,1.0); }',
-      fragmentShader: [
-        'precision mediump float;',
-        'varying vec2 vUv; uniform float uTime; uniform float uAspect; uniform vec2 uMouse;',
-        'float aaLine(float d, float w){ return 1.0-smoothstep(w, w+0.010, d); }',
-        'float triGrid(vec2 p, float near){',
-        '  vec2 g = p * vec2(86.0, 54.0);',
-        '  float fx = abs(fract(g.x)-0.5);',
-        '  float fy = abs(fract(g.y)-0.5);',
-        '  float fd1 = abs(fract(g.x+g.y)-0.5);',
-        '  float fd2 = abs(fract(g.x-g.y)-0.5);',
-        '  float w = mix(0.030, 0.015, near);',
-        '  float l = max(max(aaLine(fx,w), aaLine(fy,w)), max(aaLine(fd1,w*.72), aaLine(fd2,w*.72)*0.55));',
-        '  return l;',
-        '}',
-        'float band(float x){ return smoothstep(.76,.96,abs(sin(x))); }',
-        'float leftSerpentine(vec2 uv, float t){',
-        ' float path=.205+.060*sin(uv.y*18.0+t*.16)+.024*sin(uv.y*41.0-t*.10);',
-        ' float d=abs(uv.x-path);',
-        ' return band((d-.012)*96.0)*smoothstep(.155,.035,d)*smoothstep(.06,.18,uv.y)*smoothstep(.78,.30,uv.y);',
-        '}',
-        'float rightRings(vec2 uv, float t){',
-        ' vec2 d=vec2((uv.x-.765)*1.34,(uv.y-.535)*2.05); float r=length(d);',
-        ' float dist=.018*sin(uv.x*31.0+uv.y*17.0+t*.22)+.010*sin(uv.x*71.0-uv.y*29.0);',
-        ' return band((r+dist)*49.0-t*.20)*smoothstep(.285,.245,r)*smoothstep(.040,.070,r)*(.78+.22*sin(t*.95-r*22.0));',
-        '}',
-        'float centerPlateau(vec2 uv, float t){',
-        ' float zone=smoothstep(.325,.365,uv.x)*smoothstep(.645,.605,uv.x)*smoothstep(.34,.39,uv.y)*smoothstep(.72,.65,uv.y);',
-        ' float cuts=smoothstep(-.30,.26,sin(uv.x*36.0+uv.y*23.0+t*.11))*smoothstep(-.45,.18,sin(uv.x*18.0-uv.y*31.0));',
-        ' return zone*(.42+.58*cuts);',
-        '}',
-        'float lowerArc(vec2 uv, float t){',
-        ' vec2 d=vec2((uv.x-.48)*1.08,(uv.y-.90)*1.70); float r=length(d);',
-        ' return band(r*43.0+t*.08)*smoothstep(.43,.38,r)*smoothstep(.18,.22,r)*smoothstep(.72,.84,uv.y);',
-        '}',
-        'float rightRidge(vec2 uv, float t){',
-        ' float y=.78-(uv.x-.50)*.62+.025*sin(uv.x*22.0+t*.12); return smoothstep(.072,.018,abs(uv.y-y))*smoothstep(.50,.68,uv.x);',
-        '}',
-        'void main(){',
-        '  vec2 suv = vUv;',
-        '  float terrainTop = 0.82;',
-        '  float h = clamp((terrainTop - suv.y) / terrainTop, 0.0, 1.0);',
-        '  if(h <= 0.0){ discard; }',
-        '  float near = pow(h, .62);',
-        '  float denom = 0.18 + near * 1.62;',
-        '  vec2 fuv;',
-        '  fuv.x = .5 + (suv.x-.5) / denom;',
-        '  fuv.y = near;',
-        '  float grid = triGrid(fuv, near);',
-        '  float l=leftSerpentine(fuv,uTime);',
-        '  float rr=rightRings(fuv,uTime);',
-        '  float cp=centerPlateau(fuv,uTime);',
-        '  float la=lowerArc(fuv,uTime);',
-        '  float rg=rightRidge(fuv,uTime);',
-        '  float mask=max(max(max(l,rr),max(cp,la)),rg);',
-        '  float edgeFade=smoothstep(.02,.13,suv.x)*smoothstep(.98,.87,suv.x);',
-        '  float horizonFade=smoothstep(.02,.22,h);',
-        '  float bottomFade=1.0-smoothstep(.94,1.0,h)*.35;',
-        '  float alpha=grid*(.105 + mask*.92 + cp*.24 + rg*.28)*edgeFade*horizonFade*bottomFade;',
-        '  vec3 base=vec3(.55,.35,.06); vec3 gold=vec3(.84,.55,.08); vec3 bright=vec3(.94,.70,.23);',
-        '  vec3 col=mix(base,gold,smoothstep(.12,.55,mask)); col=mix(col,bright,smoothstep(.65,1.0,mask));',
-        '  gl_FragColor=vec4(col, clamp(alpha,0.0,.92));',
-        '}'
-      ].join('\n')
-    }));
-    screenTerrain.renderOrder = -3;
-    scene.add(screenTerrain);
-
-    // ── dense amber mineral dust field ──────────────────────────────────────
-    var starCount = isMobile ? 700 : 1850;
-    var starPos = new Float32Array(starCount * 3);
-    var starSize = new Float32Array(starCount);
-    var starColor = new Float32Array(starCount * 3);
-    for (var si = 0; si < starCount; si++) {
-      var s3 = si * 3;
-      var z = Math.random();
-      starPos[s3] = (Math.random() - .5) * 270;
-      starPos[s3 + 1] = -5 + Math.random() * 110;
-      starPos[s3 + 2] = -220 + Math.random() * 215;
-      starSize[si] = .45 + Math.pow(z, 2.2) * (isMobile ? 1.1 : 2.0);
-      starColor[s3] = .72 + z * .22;
-      starColor[s3 + 1] = .45 + z * .25;
-      starColor[s3 + 2] = .13 + z * .13;
-    }
-    var starGeo = new THREE.BufferGeometry();
-    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-    starGeo.setAttribute('aSize', new THREE.BufferAttribute(starSize, 1));
-    starGeo.setAttribute('color', new THREE.BufferAttribute(starColor, 3));
-    var starMat = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      vertexColors: true,
-      uniforms: { uTime: { value: 0 }, uMouse: { value: new THREE.Vector2() } },
-      vertexShader: [
-        'attribute float aSize; varying vec3 vColor; varying float vAlpha; uniform float uTime; uniform vec2 uMouse;',
-        'void main(){ vec3 p=position; p.x += uMouse.x*(3.0+aSize*2.0)+sin(uTime*.08+position.z*.03)*.55; p.y += uMouse.y*(2.0+aSize)+cos(uTime*.07+position.x*.02)*.35; vColor=color; vAlpha=.45+.25*sin(uTime*.55+position.x*.07+position.z*.03); vec4 mv=modelViewMatrix*vec4(p,1.0); gl_PointSize=aSize*(230.0/max(38.0,-mv.z)); gl_Position=projectionMatrix*mv; }'
-      ].join('\n'),
-      fragmentShader: 'precision mediump float; varying vec3 vColor; varying float vAlpha; void main(){ vec2 d=gl_PointCoord-.5; float a=1.0-smoothstep(.06,.48,length(d)); gl_FragColor=vec4(vColor,a*vAlpha*.72); }'
-    });
-    var stars = new THREE.Points(starGeo, starMat);
-    stars.renderOrder = -10;
-    scene.add(stars);
-
-    // ── dominant triangulated geological terrain mesh ───────────────────────
-    var meshCols = isMobile ? 118 : 220;
-    var meshRows = isMobile ? 68 : 120;
-    var terrainWidth = 510;
-    var terrainDepth = 292;
-    var vertEstimate = ((meshCols - 1) * meshRows + meshCols * (meshRows - 1) + (meshCols - 1) * (meshRows - 1)) * 2;
-    var pos = new Float32Array(vertEstimate * 3);
-    var uv = new Float32Array(vertEstimate * 2);
-    var muv = new Float32Array(vertEstimate * 2);
-    var kind = new Float32Array(vertEstimate);
-    var cursor = 0;
-
-    function addSeg(u1, v1, u2, v2, k) {
-      var mx = (u1 + u2) * .5;
-      var my = (v1 + v2) * .5;
-      var arr = [[u1, v1], [u2, v2]];
-      for (var q = 0; q < 2; q++) {
-        var uu = arr[q][0], vv = arr[q][1];
-        var x = (uu - .5) * terrainWidth;
-        var zpos = -185 + vv * terrainDepth;
-        pos[cursor * 3] = x;
-        pos[cursor * 3 + 1] = -82;
-        pos[cursor * 3 + 2] = zpos;
-        uv[cursor * 2] = uu;
-        uv[cursor * 2 + 1] = vv;
-        muv[cursor * 2] = mx;
-        muv[cursor * 2 + 1] = my;
-        kind[cursor] = k;
-        cursor++;
-      }
-    }
-    for (var r = 0; r < meshRows; r++) {
-      for (var c = 0; c < meshCols - 1; c++) addSeg(c / (meshCols - 1), r / (meshRows - 1), (c + 1) / (meshCols - 1), r / (meshRows - 1), 0.0);
-    }
-    for (var c2 = 0; c2 < meshCols; c2++) {
-      for (var r2 = 0; r2 < meshRows - 1; r2++) addSeg(c2 / (meshCols - 1), r2 / (meshRows - 1), c2 / (meshCols - 1), (r2 + 1) / (meshRows - 1), 1.0);
-    }
-    for (var rr = 0; rr < meshRows - 1; rr++) {
-      for (var cc = 0; cc < meshCols - 1; cc++) {
-        var u0 = cc / (meshCols - 1), u1 = (cc + 1) / (meshCols - 1);
-        var v0 = rr / (meshRows - 1), v1 = (rr + 1) / (meshRows - 1);
-        if ((cc + rr) % 2 === 0) addSeg(u0, v0, u1, v1, 2.0);
-        else addSeg(u1, v0, u0, v1, 2.0);
-      }
-    }
-    var terrainGeo = new THREE.BufferGeometry();
-    terrainGeo.setAttribute('position', new THREE.BufferAttribute(pos.subarray(0, cursor * 3), 3));
-    terrainGeo.setAttribute('aUv', new THREE.BufferAttribute(uv.subarray(0, cursor * 2), 2));
-    terrainGeo.setAttribute('aMaskUv', new THREE.BufferAttribute(muv.subarray(0, cursor * 2), 2));
-    terrainGeo.setAttribute('aKind', new THREE.BufferAttribute(kind.subarray(0, cursor), 1));
-
-    var terrainUniforms = { uTime: { value: 0 }, uMouse: { value: new THREE.Vector2() } };
-    var terrainMat = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      uniforms: terrainUniforms,
-      vertexShader: [
-        'attribute vec2 aUv; attribute vec2 aMaskUv; attribute float aKind;',
-        'uniform float uTime; uniform vec2 uMouse;',
-        'varying vec2 vUv; varying vec2 vMaskUv; varying float vKind; varying float vDepth;',
-        'float peak(vec2 p, vec2 c, float amp, float rad){ vec2 d=p-c; return amp*exp(-dot(d,d)/rad); }',
-        'void main(){',
-        ' vec3 p=position;',
-        ' vec2 map=vec2((aUv.x-.5)*2.0, aUv.y);',
-        ' float t=uTime;',
-        ' float h=0.0;',
-        ' h += sin(map.x*5.4 + map.y*7.2 + t*.18)*2.2;',
-        ' h += sin(map.x*12.0 - map.y*6.5 - t*.13)*1.3;',
-        ' h += peak(aUv, vec2(.76,.52), 8.0, .010);',
-        ' h += peak(aUv, vec2(.46,.56), 5.0, .028);',
-        ' h += peak(aUv, vec2(.22,.36), 4.0, .020);',
-        ' p.y += h;',
-        // Terrain is spatially locked; cursor affects only atmospheric stars/constellation.
-        ' vUv=aUv; vMaskUv=aMaskUv; vKind=aKind; vDepth=aUv.y;',
-        ' gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);',
-        '}'
-      ].join('\n'),
-      fragmentShader: [
-        'precision mediump float;',
-        'uniform float uTime; uniform vec2 uMouse;',
-        'varying vec2 vUv; varying vec2 vMaskUv; varying float vKind; varying float vDepth;',
-        'float linePulse(float x){ return smoothstep(.78,.97,abs(sin(x))); }',
-        'float leftSerpentine(vec2 uv, float t){',
-        ' float path=.205+.060*sin(uv.y*18.0+t*.16)+.024*sin(uv.y*41.0-t*.10);',
-        ' float d=abs(uv.x-path);',
-        ' float repeated=linePulse((d-.012)*96.0);',
-        ' float gate=smoothstep(.155,.035,d)*smoothstep(.06,.18,uv.y)*smoothstep(.78,.30,uv.y);',
-        ' return repeated*gate;',
-        '}',
-        'float rightRings(vec2 uv, float t){',
-        ' vec2 d=vec2((uv.x-.765)*1.34,(uv.y-.535)*2.05);',
-        ' float r=length(d);',
-        ' float distortion=.018*sin(uv.x*31.0+uv.y*17.0+t*.22)+.010*sin(uv.x*71.0-uv.y*29.0);',
-        ' float rings=linePulse((r+distortion)*49.0-t*.20);',
-        ' float gate=smoothstep(.285,.245,r)*smoothstep(.040,.070,r);',
-        ' float shimmer=.78+.22*sin(t*.95-r*22.0);',
-        ' return rings*gate*shimmer;',
-        '}',
-        'float centerPlateau(vec2 uv, float t){',
-        ' float zone=smoothstep(.325,.365,uv.x)*smoothstep(.645,.605,uv.x)*smoothstep(.34,.39,uv.y)*smoothstep(.72,.65,uv.y);',
-        ' float cuts=smoothstep(-.30,.26,sin(uv.x*36.0+uv.y*23.0+t*.11))*smoothstep(-.45,.18,sin(uv.x*18.0-uv.y*31.0));',
-        ' return zone*(.42+.58*cuts);',
-        '}',
-        'float lowerArc(vec2 uv, float t){',
-        ' vec2 d=vec2((uv.x-.48)*1.08,(uv.y-.90)*1.70);',
-        ' float r=length(d);',
-        ' float bands=linePulse(r*43.0+t*.08);',
-        ' return bands*smoothstep(.43,.38,r)*smoothstep(.18,.22,r)*smoothstep(.72,.84,uv.y);',
-        '}',
-        'float rightRidge(vec2 uv, float t){',
-        ' float y=.78-(uv.x-.50)*.62+.025*sin(uv.x*22.0+t*.12);',
-        ' float d=abs(uv.y-y);',
-        ' return smoothstep(.072,.018,d)*smoothstep(.50,.68,uv.x);',
-        '}',
-        'void main(){',
-        ' float t=uTime;',
-        ' vec2 uv=vMaskUv;',
-        ' float l=leftSerpentine(uv,t);',
-        ' float rr=rightRings(uv,t);',
-        ' float cp=centerPlateau(uv,t);',
-        ' float la=lowerArc(uv,t);',
-        ' float rg=rightRidge(uv,t);',
-        ' float rare=smoothstep(.985,.999,fract(sin(dot(floor(uv*vec2(160.0,90.0)),vec2(12.9898,78.233)))*43758.5453 + t*.035));',
-        ' float intensity=.12 + l*.86 + rr*1.12 + cp*.70 + la*.82 + rg*.72 + rare*.32;',
-        ' float edgeFade=smoothstep(.015,.10,uv.x)*smoothstep(.985,.90,uv.x);',
-        ' float horizonFade=smoothstep(.035,.22,uv.y);',
-        ' float bottomFade=1.0-smoothstep(.96,1.015,uv.y)*.42;',
-        ' float alpha=(.055 + intensity*.34)*edgeFade*horizonFade*bottomFade;',
-        ' alpha *= .72 + .28*smoothstep(.18,1.0,uv.y);',
-        ' vec3 base=vec3(.48,.29,.04);',
-        ' vec3 gold=vec3(.85,.55,.08);',
-        ' vec3 bright=vec3(.98,.72,.23);',
-        ' vec3 col=mix(base,gold,smoothstep(.18,.78,intensity));',
-        ' col=mix(col,bright,smoothstep(.90,1.55,intensity));',
-        ' gl_FragColor=vec4(col, clamp(alpha,0.0,.66));',
-        '}'
-      ].join('\n')
-    });
-    var terrain = new THREE.LineSegments(terrainGeo, terrainMat);
-    terrain.frustumCulled = false;
-    terrain.renderOrder = 5;
-    scene.add(terrain);
-
-    // ── floating mineral objects and orbit icons — DISABLED for final recovery ──
-    // The accepted direction is the living star/constellation organism + dominant geological mesh,
-    // not floating cubes/polyhedra.
-    var minerals = [];
-
-    function resize() {
-      readSize();
-      camera.aspect = size.w / size.h;
-      camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.35));
-      renderer.setSize(size.w, size.h, false);
-      bgUniforms.uAspect.value = size.w / size.h;
-      screenTerrainUniforms.uAspect.value = size.w / size.h;
-      var aspectBoost = Math.max(1.0, (size.w / Math.max(1, size.h)) / 1.66);
-      terrain.scale.set(aspectBoost, 1, 1);
-    }
-    window.addEventListener('resize', resize, { passive: true });
-    window.addEventListener('pointermove', function (e) {
-      var r = canvas.getBoundingClientRect();
-      mouse.x = ((e.clientX - r.left) / Math.max(1, r.width) - .5) * 2;
-      mouse.y = ((e.clientY - r.top) / Math.max(1, r.height) - .5) * 2;
-    }, { passive: true });
-    window.addEventListener('beforeunload', function () { destroyed = true; });
-    resize();
-
-    function animate() {
-      if (destroyed) return;
-      var t = clock.getElapsedTime();
-      damped.x += (mouse.x - damped.x) * .045;
-      damped.y += (mouse.y - damped.y) * .045;
-      bgUniforms.uTime.value = t; bgUniforms.uMouse.value.copy(damped);
-      screenTerrainUniforms.uTime.value = t; screenTerrainUniforms.uMouse.value.copy(damped);
-      terrainUniforms.uTime.value = t; terrainUniforms.uMouse.value.copy(damped);
-      starMat.uniforms.uTime.value = t; starMat.uniforms.uMouse.value.copy(damped);
-      stars.rotation.y = damped.x * .018 + Math.sin(t * .035) * .006;
-      stars.rotation.x = damped.y * .012;
-      for (var i = 0; i < minerals.length; i++) {
-        var m = minerals[i], u = m.userData;
-        m.position.y = u.baseY + Math.sin(t * .28 + u.phase) * 1.6;
-        m.rotation.x += u.speed * .004;
-        m.rotation.y += u.speed * .007;
-        m.rotation.z += u.speed * .003;
-        if (u.ring) {
-          u.ring.rotation.z += .004 + i * .001;
-          var a = t * (.34 + u.speed) + u.phase;
-          u.moon.position.set(Math.cos(a) * u.moonR, Math.sin(a) * u.moonR * .36, Math.sin(a) * u.moonR * .18);
-        }
-      }
-      // Camera locked: no global mesh/camera drift. Cursor affects atmospheric stars only.
-      renderer.render(scene, camera);
-      var gl = renderer.getContext();
-      if (t > 0.35 && (!gl || gl.isContextLost() || gl.drawingBufferWidth === 0 || gl.drawingBufferHeight === 0)) {
-        startCanvasFallback('webgl-context-lost-or-zero-buffer');
-        return;
-      }
-      requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
-
-    window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'geological-intelligence-map-webgl-v4-gpt55-recovered-01',
-      renderer: 'three-webgl',
-      grid: (meshCols + 'x' + meshRows),
-      triangularCells: true,
-      segments: cursor / 2,
-      contourMasks: ['leftSerpentine', 'rightRings', 'centerPlateau', 'lowerArc', 'rightRidge'],
-      fullWidthMesh: true,
-      particles: starCount,
-      mineralObjects: minerals.length
+  function mulberry32(seed) {
+    return function () {
+      var t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
   }
 
-  // Emergency visual fallback only for environments with broken/no WebGL. The intended renderer is WebGL.
-  function startCanvasFallback(reason) {
-    var hero = document.querySelector('.hero') || canvas.parentElement || document.body;
-    var ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    var W = 1, H = 1, DPR = 1, start = performance.now(), stars = [];
-    function resize() {
-      var r = hero.getBoundingClientRect(); W = Math.max(320, r.width || innerWidth); H = Math.max(560, r.height || innerHeight * .94); DPR = Math.min(devicePixelRatio || 1, W < 768 ? 1 : 1.4);
-      canvas.width = W * DPR; canvas.height = H * DPR; canvas.style.width = W + 'px'; canvas.style.height = H + 'px'; ctx.setTransform(DPR,0,0,DPR,0,0); stars = [];
-      for (var i=0;i<(W<768?260:720);i++) stars.push({x:Math.random()*W,y:Math.random()*H*.75,z:Math.random(),p:Math.random()*6.28});
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function smoothstep(a, b, x) {
+    var t = clamp((x - a) / Math.max(0.00001, b - a), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  function mix(a, b, t) { return a + (b - a) * t; }
+  function rgba(rgb, a) { return 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + a.toFixed(3) + ')'; }
+  function dist(x1, y1, x2, y2) { var dx = x1 - x2, dy = y1 - y2; return Math.sqrt(dx * dx + dy * dy); }
+
+  function pickPalette(rng) {
+    var r = rng(), acc = 0;
+    for (var i = 0; i < starPalette.length; i++) {
+      acc += starPalette[i].weight;
+      if (r <= acc) return starPalette[i];
     }
-    function h(x,z,t){return Math.sin(x*.055+t*.25)*8+Math.sin(z*.075-t*.18)*6+18*Math.exp(-((x-80)*(x-80)+(z-70)*(z-70))/1800);}
-    function project(x,y,z){var s=430/Math.max(50,z+180);return {x:W*.5+x*s,y:H*.69-y*s*.72+(z-35)*1.5};}
-    function mask(u,v,t){var left=Math.abs(u-(.205+.06*Math.sin(v*18+t*.16))); var l=(left<.15&&Math.abs(Math.sin((left-.012)*96))>.78)?1:0; var dx=(u-.765)*1.34,dy=(v-.535)*2.05,r=Math.sqrt(dx*dx+dy*dy); var rr=(r>.04&&r<.285&&Math.abs(Math.sin((r+.016*Math.sin(u*31+v*17+t*.22))*49-t*.2))>.78)?1:0; var cp=(u>.33&&u<.65&&v>.34&&v<.72&&Math.sin(u*36+v*23+t*.11)>-.25)?1:0; var la=(Math.abs(Math.sin(Math.sqrt((u-.48)*(u-.48)*1.16+(v-.90)*(v-.90)*2.89)*43+t*.08))>.82&&v>.72)?1:0; return Math.max(l,rr,cp*.7,la*.8);}
-    function draw(now){var t=(now-start)/1000;ctx.clearRect(0,0,W,H);var bg=ctx.createRadialGradient(W*.5,H*.48,0,W*.5,H*.48,Math.max(W,H)*.8);bg.addColorStop(0,'#2b1905');bg.addColorStop(.35,'#070604');bg.addColorStop(1,'#020202');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='screen';stars.forEach(function(s){ctx.fillStyle='rgba(214,145,18,'+(.10+s.z*.34)+')';ctx.beginPath();ctx.arc(s.x,s.y,.4+s.z*1.2,0,6.28);ctx.fill();});var cols=W<768?90:170,rows=W<768?52:92,pts=[];for(var j=0;j<rows;j++){for(var i=0;i<cols;i++){var u=i/(cols-1),v=j/(rows-1),x=(u-.5)*260,z=-20+v*165;pts.push(project(x,h(x,z,t),z));}}for(var y=0;y<rows;y++){for(var x=0;x<cols;x++){var id=y*cols+x,u=x/(cols-1),v=y/(rows-1),m=mask(u,v,t),a=.045+m*.36;ctx.strokeStyle='rgba(217,148,18,'+a+')';ctx.lineWidth=.75;if(x<cols-1){ctx.beginPath();ctx.moveTo(pts[id].x,pts[id].y);ctx.lineTo(pts[id+1].x,pts[id+1].y);ctx.stroke();}if(y<rows-1){ctx.beginPath();ctx.moveTo(pts[id].x,pts[id].y);ctx.lineTo(pts[id+cols].x,pts[id+cols].y);ctx.stroke();}if(x<cols-1&&y<rows-1){ctx.beginPath();ctx.moveTo(pts[id].x,pts[id].y);ctx.lineTo(pts[id+cols+((x+y)%2?0:1)].x,pts[id+cols+((x+y)%2?0:1)].y);ctx.stroke();}}}requestAnimationFrame(draw);}resize();addEventListener('resize',resize,{passive:true});requestAnimationFrame(draw);window.__AFRIPLAN_HERO_WEBGL__={version:'geology-fallback',renderer:'canvas2d',reason:reason};
+    return starPalette[starPalette.length - 1];
   }
 
-  boot();
+  function lineFeature(value, target, width) {
+    return Math.exp(-Math.pow((value - target) / width, 2));
+  }
+
+  function pointInPoly(x, y, poly) {
+    var inside = false;
+    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      var xi = poly[i][0], yi = poly[i][1];
+      var xj = poly[j][0], yj = poly[j][1];
+      var intersect = ((yi > y) !== (yj > y)) &&
+        (x < (xj - xi) * (y - yi) / ((yj - yi) || 0.00001) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  var W = 1, H = 1, DPR = 1, mobile = false;
+  var stars = [], nodes = [], edges = [], mesh = { points: [], segments: [] };
+  var pointer = { x: 0.5, y: 0.5, px: 0.5, py: 0.5, vx: 0, vy: 0, active: false };
+
+  function projectTerrainPoint(u, v) {
+    var horizonY = H * 0.515;
+    var nearY = H * 1.105;
+    var perspective = Math.pow(v, 1.55);
+    var y = horizonY + perspective * (nearY - horizonY);
+    var spread = W * (0.62 + v * 1.58);
+    var x = W * 0.5 + (u - 0.5) * spread;
+    return { x: x, y: y };
+  }
+
+  function featureIntensity(u, v, x, y) {
+    // Left flowing strata — layered sinusoidal bands in the left third.
+    var leftMask = 1 - smoothstep(0.30, 0.56, u);
+    var strataPhase = v * 10.5 + Math.sin(u * 17.0) * 0.82 + Math.sin(v * 7.0 + u * 4.0) * 0.30;
+    var strata = Math.pow(0.5 + 0.5 * Math.sin(strataPhase), 10.0) * leftMask * smoothstep(0.06, 0.42, v);
+
+    // Central angular plateau — fixed faceted mineral table.
+    var plateauPoly = [[0.38, 0.37], [0.58, 0.33], [0.69, 0.47], [0.62, 0.66], [0.44, 0.69], [0.31, 0.53]];
+    var plateauInside = pointInPoly(u, v, plateauPoly) ? 1 : 0;
+    var plateauRidge = Math.max(
+      lineFeature(Math.abs((v - 0.47) + (u - 0.51) * 0.45), 0, 0.025),
+      lineFeature(Math.abs((v - 0.61) - (u - 0.49) * 0.34), 0, 0.030)
+    ) * smoothstep(0.30, 0.48, u) * (1 - smoothstep(0.76, 0.96, u));
+    var plateau = plateauInside * 0.58 + plateauRidge * 0.72;
+
+    // Lower-center arcs — crescent deposits in the near foreground.
+    var dc = dist(u, v, 0.50, 0.93);
+    var arcs = Math.max(
+      lineFeature(dc, 0.22, 0.014),
+      lineFeature(dc, 0.31, 0.016),
+      lineFeature(dc, 0.41, 0.019)
+    ) * smoothstep(0.48, 0.76, v) * (1 - smoothstep(0.98, 1.08, v));
+
+    // Right concentric deposit rings.
+    var dr = dist(u, v, 0.795, 0.60);
+    var rings = Math.max(
+      lineFeature(dr, 0.055, 0.010),
+      lineFeature(dr, 0.105, 0.012),
+      lineFeature(dr, 0.158, 0.014),
+      lineFeature(dr, 0.218, 0.017)
+    ) * smoothstep(0.55, 0.71, u) * (1 - smoothstep(0.94, 1.06, u));
+
+    // Right ridge / fault vein.
+    var ridge = lineFeature(Math.abs((u - 0.75) + Math.sin(v * 8.5) * 0.045), 0, 0.018) * smoothstep(0.50, 0.76, v);
+
+    // Low-frequency geological contouring — deterministic, not moving.
+    var low = Math.sin(u * 13.2 + Math.sin(v * 4.1) * 1.2) + Math.sin(v * 15.4 + u * 3.7);
+    var noiseContour = Math.pow(Math.max(0, 0.5 + 0.5 * Math.sin(low * 2.15 + u * 5.4)), 8) * 0.25;
+
+    return clamp(Math.max(strata, plateau, arcs, rings, ridge * 0.74, noiseContour), 0, 1);
+  }
+
+  function terrainDisplace(u, v) {
+    var du = 0, dv = 0;
+    // Organic but fixed offsets. These are generated once; no translation or drift.
+    du += Math.sin(v * 18 + u * 3.5) * 0.010 * (1 - smoothstep(0.35, 0.60, u));
+    dv += Math.sin(u * 15 + v * 5.0) * 0.012 * smoothstep(0.08, 0.35, v);
+    var ringPull = Math.exp(-Math.pow(dist(u, v, 0.79, 0.60) / 0.22, 2));
+    du += (u - 0.79) * ringPull * 0.020;
+    dv += (v - 0.60) * ringPull * 0.018;
+    var plateauLift = pointInPoly(u, v, [[0.38, 0.37], [0.58, 0.33], [0.69, 0.47], [0.62, 0.66], [0.44, 0.69], [0.31, 0.53]]) ? -0.014 : 0;
+    dv += plateauLift;
+    return { u: clamp(u + du, -0.08, 1.08), v: clamp(v + dv, 0, 1.08) };
+  }
+
+  function rebuild() {
+    var rect = hero.getBoundingClientRect();
+    W = Math.max(320, Math.round(rect.width || window.innerWidth));
+    H = Math.max(560, Math.round(rect.height || window.innerHeight));
+    mobile = W < 768;
+    DPR = Math.min(window.devicePixelRatio || 1, mobile ? 1.15 : 1.55);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    var rng = mulberry32(0xAFAF2026);
+    stars = [];
+    var farCount = mobile ? 620 : 1500;
+    for (var i = 0; i < farCount; i++) {
+      var pal = pickPalette(rng);
+      var depth = rng();
+      var yBias = Math.pow(rng(), 1.18);
+      stars.push({
+        x: rng() * W,
+        y: yBias * H * 0.94,
+        r: mix(0.35, 0.90, rng()) * (depth < 0.18 ? 1.28 : 1),
+        c: pal.color,
+        a: pal.alpha * mix(0.52, 1.0, rng()),
+        phase: rng() * Math.PI * 2,
+        tw: mix(0.05, 0.18, rng())
+      });
+    }
+    for (var a = 0; a < (mobile ? 10 : 20); a++) {
+      stars.push({ x: rng() * W, y: rng() * H * 0.74, r: mix(1.3, 1.8, rng()), c: [224, 160, 48], a: mix(0.54, 0.84, rng()), phase: rng() * 6.28, tw: 0.10 });
+    }
+
+    nodes = [];
+    var nodeCount = mobile ? 82 : 166;
+    for (var n = 0; n < nodeCount; n++) {
+      var nx = rng() * W;
+      var ny = Math.pow(rng(), 1.16) * H * 0.74 + H * 0.03;
+      nodes.push({
+        baseX: nx, baseY: ny, x: nx, y: ny, vx: 0, vy: 0,
+        depth: mix(0.35, 1.0, rng()), r: mix(0.65, 1.35, rng()),
+        phase: rng() * Math.PI * 2
+      });
+    }
+    edges = [];
+    var maxEdges = mobile ? 90 : 210;
+    for (var e = 0; e < nodes.length && edges.length < maxEdges; e++) {
+      var nearest = [];
+      for (var j = 0; j < nodes.length; j++) if (j !== e) {
+        var d = dist(nodes[e].baseX, nodes[e].baseY, nodes[j].baseX, nodes[j].baseY);
+        if (d < (mobile ? 96 : 128)) nearest.push({ j: j, d: d });
+      }
+      nearest.sort(function (aa, bb) { return aa.d - bb.d; });
+      for (var k = 0; k < Math.min(2, nearest.length); k++) {
+        if (rng() < 0.44) edges.push([e, nearest[k].j, nearest[k].d]);
+      }
+    }
+
+    mesh = { points: [], segments: [] };
+    var cols = mobile ? 46 : 70;
+    var rows = mobile ? 28 : 42;
+    for (var r = 0; r <= rows; r++) {
+      for (var c = 0; c <= cols; c++) {
+        var u = c / cols;
+        var v = r / rows;
+        var jitterU = (rng() - 0.5) * 0.010;
+        var jitterV = (rng() - 0.5) * 0.007;
+        var q = terrainDisplace(u + jitterU, v + jitterV);
+        var p = projectTerrainPoint(q.u, q.v);
+        mesh.points.push({ u: u, v: v, x: p.x, y: p.y, f: featureIntensity(u, v, p.x, p.y), phase: rng() * 6.28 });
+      }
+    }
+    function idx(c, r) { return r * (cols + 1) + c; }
+    function addSeg(aIdx, bIdx, bias) {
+      var p1 = mesh.points[aIdx], p2 = mesh.points[bIdx];
+      var midF = Math.max(p1.f, p2.f);
+      var baseVisibility = smoothstep(0.02, 0.24, p1.v) * (1 - smoothstep(1.05, 1.16, p1.v));
+      // Keep a real base plane visible even outside features; stronger inside features.
+      var strength = (0.18 + midF * 0.82 + bias) * baseVisibility;
+      if (strength > 0.055) mesh.segments.push({ a: aIdx, b: bIdx, s: clamp(strength, 0, 1), phase: (p1.phase + p2.phase) * 0.5 });
+    }
+    for (var rr = 0; rr < rows; rr++) {
+      for (var cc = 0; cc < cols; cc++) {
+        addSeg(idx(cc, rr), idx(cc + 1, rr), 0.02);
+        addSeg(idx(cc, rr), idx(cc, rr + 1), 0.00);
+        if ((cc + rr) % 2 === 0) addSeg(idx(cc, rr), idx(cc + 1, rr + 1), 0.025);
+        else addSeg(idx(cc + 1, rr), idx(cc, rr + 1), 0.025);
+      }
+    }
+  }
+
+  function drawBackground() {
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#010101');
+    g.addColorStop(0.48, '#050302');
+    g.addColorStop(1, '#010101');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    var r1 = ctx.createRadialGradient(W * 0.5, H * 0.34, 0, W * 0.5, H * 0.34, W * 0.50);
+    r1.addColorStop(0, 'rgba(165,102,21,0.18)');
+    r1.addColorStop(0.58, 'rgba(80,42,6,0.055)');
+    r1.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = r1; ctx.fillRect(0, 0, W, H);
+
+    var r2 = ctx.createRadialGradient(W * 0.50, H * 0.62, 0, W * 0.50, H * 0.62, W * 0.66);
+    r2.addColorStop(0, 'rgba(150,88,14,0.18)');
+    r2.addColorStop(0.45, 'rgba(70,35,5,0.08)');
+    r2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = r2; ctx.fillRect(0, 0, W, H);
+  }
+
+  function drawStars(t) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var tw = 1 + Math.sin(t * s.tw + s.phase) * 0.16;
+      ctx.fillStyle = rgba(s.c, clamp(s.a * tw, 0, 0.94));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function updateConstellation(t) {
+    var px = pointer.x * W, py = pointer.y * H;
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var dx = n.x - px, dy = n.y - py;
+      var d = Math.sqrt(dx * dx + dy * dy) + 0.0001;
+      var force = Math.pow(clamp(1 - d / (mobile ? 175 : 245), 0, 1), 2.2);
+      var swirl = force * 0.34 * n.depth;
+      var push = force * (mobile ? 1.05 : 1.45) * n.depth;
+      n.vx += (dx / d) * push + (-dy / d) * pointer.vx * swirl;
+      n.vy += (dy / d) * push + ( dx / d) * pointer.vy * swirl;
+      n.vx += (n.baseX - n.x) * 0.018;
+      n.vy += (n.baseY - n.y) * 0.018;
+      n.vx *= 0.90;
+      n.vy *= 0.90;
+      n.x += n.vx;
+      n.y += n.vy;
+    }
+  }
+
+  function drawConstellation(t) {
+    updateConstellation(t);
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var e = 0; e < edges.length; e++) {
+      var a = nodes[edges[e][0]], b = nodes[edges[e][1]];
+      var d = dist(a.x, a.y, b.x, b.y);
+      var alpha = (1 - clamp(d / (mobile ? 140 : 190), 0, 1)) * 0.15;
+      if (alpha <= 0.005) continue;
+      ctx.strokeStyle = 'rgba(194,126,30,' + alpha.toFixed(3) + ')';
+      ctx.lineWidth = 0.55;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var pulse = 0.82 + 0.18 * Math.sin(t * 0.35 + n.phase);
+      ctx.fillStyle = 'rgba(214,145,38,' + (0.20 + 0.22 * n.depth * pulse).toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r * pulse, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawMesh(t) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Wide fixed base glow under the lower-half terrain. It does not move.
+    var ground = ctx.createRadialGradient(W * 0.50, H * 0.80, 0, W * 0.50, H * 0.80, W * 0.72);
+    ground.addColorStop(0, 'rgba(170,94,13,0.110)');
+    ground.addColorStop(0.45, 'rgba(94,49,5,0.070)');
+    ground.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = ground; ctx.fillRect(0, H * 0.42, W, H * 0.62);
+
+    for (var i = 0; i < mesh.segments.length; i++) {
+      var seg = mesh.segments[i];
+      var a = mesh.points[seg.a], b = mesh.points[seg.b];
+      var depth = smoothstep(0.04, 0.34, Math.max(a.v, b.v));
+      var horizonFade = 0.42 + 0.58 * depth;
+      var shimmer = 0.92 + 0.08 * Math.sin(t * 0.42 + seg.phase);
+      var alpha = clamp((0.14 + seg.s * 0.74) * horizonFade * shimmer, 0.07, 0.88);
+      var hot = seg.s > 0.70;
+      ctx.strokeStyle = rgba(hot ? GOLD.hot : (seg.s > 0.45 ? GOLD.strong : GOLD.mid), alpha);
+      ctx.lineWidth = (hot ? 1.05 : 0.70) + seg.s * 0.45;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+
+    // Explicit deposit signatures so the geological forms remain legible.
+    drawFeatureRings(t);
+    ctx.restore();
+  }
+
+  function drawProjectedPolyline(points, color, width, alpha) {
+    ctx.strokeStyle = rgba(color, alpha);
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    for (var i = 0; i < points.length; i++) {
+      var q = terrainDisplace(points[i][0], points[i][1]);
+      var p = projectTerrainPoint(q.u, q.v);
+      if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+  }
+
+  function drawFeatureRings(t) {
+    var pulse = 0.92 + 0.08 * Math.sin(t * 0.38);
+    // Left flowing strata.
+    for (var b = 0; b < 8; b++) {
+      var pts = [];
+      for (var i = 0; i <= 64; i++) {
+        var u = i / 64 * 0.42 - 0.03;
+        var v = 0.28 + b * 0.065 + Math.sin(i * 0.18 + b * 0.7) * 0.018;
+        pts.push([u, v]);
+      }
+      drawProjectedPolyline(pts, GOLD.strong, 0.72, 0.18 * pulse);
+    }
+    // Central angular plateau.
+    var poly = [[0.38, 0.37], [0.58, 0.33], [0.69, 0.47], [0.62, 0.66], [0.44, 0.69], [0.31, 0.53], [0.38, 0.37]];
+    drawProjectedPolyline(poly, GOLD.hot, 1.15, 0.42 * pulse);
+    drawProjectedPolyline([[0.35,0.56],[0.49,0.45],[0.66,0.50]], GOLD.strong, 0.85, 0.30 * pulse);
+    drawProjectedPolyline([[0.42,0.67],[0.52,0.55],[0.60,0.35]], GOLD.strong, 0.75, 0.24 * pulse);
+    // Lower center arcs.
+    for (var r = 0; r < 4; r++) {
+      var arcPts = [];
+      var rad = 0.20 + r * 0.075;
+      for (var a = Math.PI * 1.08; a <= Math.PI * 1.92; a += 0.035) {
+        arcPts.push([0.50 + Math.cos(a) * rad, 0.93 + Math.sin(a) * rad * 0.52]);
+      }
+      drawProjectedPolyline(arcPts, r === 2 ? GOLD.hot : GOLD.strong, 0.95, (0.26 + r * 0.035) * pulse);
+    }
+    // Right concentric rings.
+    for (var rr = 0; rr < 5; rr++) {
+      var ringPts = [];
+      var rx = 0.055 + rr * 0.045;
+      var ry = 0.040 + rr * 0.036;
+      for (var aa = 0; aa <= Math.PI * 2.02; aa += 0.045) {
+        ringPts.push([0.795 + Math.cos(aa) * rx, 0.60 + Math.sin(aa) * ry]);
+      }
+      drawProjectedPolyline(ringPts, rr < 2 ? GOLD.hot : GOLD.strong, 0.92, (0.34 - rr * 0.025) * pulse);
+    }
+  }
+
+  function frame(now) {
+    var t = now * 0.001;
+    pointer.vx = (pointer.x - pointer.px) * W;
+    pointer.vy = (pointer.y - pointer.py) * H;
+    pointer.px = pointer.x; pointer.py = pointer.y;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    drawBackground();
+    drawStars(t);
+    drawConstellation(t);
+    drawMesh(t);
+    requestAnimationFrame(frame);
+  }
+
+  function onPointer(e) {
+    var r = canvas.getBoundingClientRect();
+    pointer.x = clamp((e.clientX - r.left) / Math.max(1, r.width), 0, 1);
+    pointer.y = clamp((e.clientY - r.top) / Math.max(1, r.height), 0, 1);
+    pointer.active = true;
+  }
+
+  var resizeTimer = 0;
+  function scheduleResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(rebuild, 80);
+  }
+
+  window.addEventListener('pointermove', onPointer, { passive: true });
+  window.addEventListener('resize', scheduleResize, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(scheduleResize).observe(hero);
+
+  rebuild();
+  requestAnimationFrame(frame);
+
+  window.__AFRIPLAN_HERO_CANVAS2D__ = {
+    version: VERSION,
+    renderer: 'canvas2d',
+    webglReplaced: true,
+    deterministicSeed: '0xAFAF2026',
+    stars: function () { return stars.length; },
+    constellationNodes: function () { return nodes.length; },
+    meshSegments: function () { return mesh.segments.length; },
+    fixedMesh: true,
+    noCubesNoPolyhedra: true
+  };
 })();
