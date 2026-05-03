@@ -4,7 +4,6 @@
  * Uses Three.js CDN: https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js
  */
 (function () {
-  console.log('[HERO] bisimwa WebGL starting...');
   'use strict';
 
   var canvasEl = document.getElementById('heroBgCanvas');
@@ -29,8 +28,7 @@
     antialias: !isMobile,
     powerPreference: 'high-performance'
   });
-  console.log('[HERO] Renderer created, WebGL? ' + !!renderer.getContext().getParameter && 'yes'); renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.0 : 2));
-  console.log('[HERO] Renderer ready, webgl: ' + !!renderer.getContext()); console.log('[HERO] Renderer info: ' + renderer.info.render.calls + ' calls');
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.0 : 2));
   renderer.setSize(heroSize.w, heroSize.h);
   renderer.setClearColor(0x0A0A08, 1);
 
@@ -171,7 +169,7 @@
       color: 0xC9A454,
       wireframe: true,
       transparent: true,
-      opacity: 0.015
+      opacity: 0.22
     });
     var m = new THREE.Mesh(d.geo, mat);
     m.position.set(d.x, d.y, d.z);
@@ -331,7 +329,7 @@
     // MESH LOCKED - no mouse sway
     topoMesh.position.set(0, -25, -35);
 
-    console.log('[HERO] Render call, meshes: ' + scene.children.length + ', camera pos: ' + camera.position.x + ',' + camera.position.y + ',' + camera.position.z); renderer.render(scene, camera);
+    renderer.render(scene, camera);
   }
 
   requestAnimationFrame(animate);
