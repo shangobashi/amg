@@ -9,9 +9,12 @@
  var heroEl = document.querySelector('.hero');
  function getHeroSize() {
   var ww = window.innerWidth, wh = window.innerHeight;
-  if (ww > 0 && wh > 0) return { w: ww, h: wh };
-  if (heroEl && heroEl.offsetWidth > 0) return { w: heroEl.offsetWidth, h: heroEl.offsetHeight };
-  return { w: 1280, h: 720 };
+  var hw = heroEl ? heroEl.offsetWidth : 0, hh = heroEl ? heroEl.offsetHeight : 0;
+  if (ww < 100) ww = 1280;
+  if (wh < 100) wh = 720;
+  if (hw < 100) hw = ww;
+  if (hh < 100) hh = wh;
+  return { w: Math.max(ww, hw), h: Math.max(wh, hh) };
  }
  var heroSize = getHeroSize();
  console.log('[Afriplan] heroSize:', heroSize.w, 'x', heroSize.h, '| window:', window.innerWidth, 'x', window.innerHeight);
