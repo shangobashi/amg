@@ -20,7 +20,7 @@
   if (DEBUG_MESH) {
     document.documentElement.classList.add('afriplan-debug-mesh');
     var st = document.createElement('style');
-    st.textContent = '.afriplan-debug-mesh .hero__content,.afriplan-debug-mesh .nav{opacity:.08!important}.afriplan-debug-mesh .hero__aurora,.afriplan-debug-mesh .hero__aurora-2,.afriplan-debug-mesh .hero__glow-overlay,.afriplan-debug-mesh .hero__grain-overlay,.afriplan-debug-mesh .hero__particles,.afriplan-debug-mesh .hero__energy-band{display:none!important}.afriplan-debug-mesh #heroBgCanvas{z-index:9999!important;background:#000!important}';
+    st.textContent = '.afriplan-debug-mesh body{overflow:hidden!important;background:#000!important}.afriplan-debug-mesh .nav,.afriplan-debug-mesh .hero__content,.afriplan-debug-mesh .section,.afriplan-debug-mesh .section--tight,.afriplan-debug-mesh .footer{display:none!important}.afriplan-debug-mesh .hero{min-height:100vh!important;padding:0!important;background:#000!important}.afriplan-debug-mesh .hero__aurora,.afriplan-debug-mesh .hero__aurora-2,.afriplan-debug-mesh .hero__glow-overlay,.afriplan-debug-mesh .hero__grain-overlay,.afriplan-debug-mesh .hero__particles,.afriplan-debug-mesh .hero__energy-band{display:none!important}.afriplan-debug-mesh #heroBgCanvas{z-index:9999!important;background:#000!important}';
     document.head.appendChild(st);
   }
 
@@ -54,8 +54,8 @@
 
   function project(u, v) {
     // v=0 horizon, v=1 near edge. The mesh starts high enough to dominate the lower hero.
-    var horizonY = H * 0.485;
-    var nearY = H * 1.13;
+    var horizonY = H * 0.535;
+    var nearY = H * 1.18;
     var p = Math.pow(v, 1.45);
     var y = horizonY + p * (nearY - horizonY);
     var spread = W * (0.50 + v * 1.95);
@@ -123,7 +123,7 @@
       // Nebular concentration left/right, not uniform wallpaper.
       if (band < 0.46) { x = W * (0.18 + rng() * 0.66); y = H * (0.06 + Math.pow(rng(), 1.4) * 0.58); }
       var tier = rng();
-      stars.push({ x: x, y: y, r: tier > 0.992 ? mix(0.95, 1.55, rng()) : mix(0.18, 0.62, rng()), a: mix(0.10, tier > 0.965 ? 0.58 : 0.34, rng()), p: rng() * 6.283, s: mix(0.05, 0.18, rng()) });
+      stars.push({ x: x, y: y, r: tier > 0.992 ? mix(0.95, 1.55, rng()) : mix(0.16, 0.55, rng()), a: mix(0.16, tier > 0.965 ? 0.72 : 0.42, rng()), p: rng() * 6.283, s: mix(0.05, 0.18, rng()) });
     }
 
     nodes = [];
@@ -178,13 +178,13 @@
     ctx.fillStyle = '#010101';
     ctx.fillRect(0, 0, W, H);
     if (DEBUG_MESH) return;
-    var g = ctx.createRadialGradient(W * 0.50, H * 0.46, 0, W * 0.50, H * 0.46, W * 0.72);
-    g.addColorStop(0, 'rgba(150,86,10,0.135)');
-    g.addColorStop(0.40, 'rgba(74,38,4,0.075)');
+    var g = ctx.createRadialGradient(W * 0.50, H * 0.40, 0, W * 0.50, H * 0.40, W * 0.48);
+    g.addColorStop(0, 'rgba(178,108,18,0.105)');
+    g.addColorStop(0.36, 'rgba(92,48,6,0.045)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     var top = ctx.createRadialGradient(W * 0.48, H * 0.20, 0, W * 0.48, H * 0.20, W * 0.60);
-    top.addColorStop(0, 'rgba(185,120,24,0.075)');
+    top.addColorStop(0, 'rgba(185,120,24,0.050)');
     top.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = top; ctx.fillRect(0, 0, W, H);
   }
@@ -233,6 +233,7 @@
   }
 
   function drawPoly(points, color, width, alpha) {
+    if (DEBUG_MESH && width >= 2.0) { color = [255, 218, 0]; alpha = 1; width = width * 1.45; }
     ctx.strokeStyle = rgba(color, alpha); ctx.lineWidth = width; ctx.beginPath();
     for (var i = 0; i < points.length; i++) {
       var q = warp(points[i][0], points[i][1]); var p = project(q.u, q.v);
@@ -251,7 +252,7 @@
         var v = 0.18 + b * 0.052 + Math.sin(i * 0.11 + b * 0.72) * 0.020;
         pts.push([u, v]);
       }
-      drawPoly(pts, DEBUG_MESH ? GOLD.debug : GOLD.strong, DEBUG_MESH ? 2.4 : 1.0, DEBUG_MESH ? 1 : 0.34 * pulse);
+      drawPoly(pts, DEBUG_MESH ? GOLD.debug : GOLD.strong, DEBUG_MESH ? 2.4 : 1.45, DEBUG_MESH ? 1 : 0.48 * pulse);
     }
     // central faceted plateau, explicit angular geometry
     var polys = [
@@ -260,19 +261,19 @@
       [[0.43,0.67],[0.53,0.50],[0.58,0.27]],
       [[0.29,0.50],[0.50,0.49],[0.72,0.41]]
     ];
-    for (var p = 0; p < polys.length; p++) drawPoly(polys[p], DEBUG_MESH ? GOLD.debug : (p ? GOLD.strong : GOLD.hot), DEBUG_MESH ? 2.8 : (p ? 1.05 : 1.35), DEBUG_MESH ? 1 : (p ? 0.38 : 0.58) * pulse);
+    for (var p = 0; p < polys.length; p++) drawPoly(polys[p], DEBUG_MESH ? GOLD.debug : (p ? GOLD.strong : GOLD.hot), DEBUG_MESH ? 2.8 : (p ? 1.45 : 1.90), DEBUG_MESH ? 1 : (p ? 0.50 : 0.74) * pulse);
 
     // lower center contour basin arcs
     for (var r = 0; r < 6; r++) {
       var arc = [], rad = 0.15 + r * 0.067;
       for (var a = Math.PI * 1.03; a <= Math.PI * 1.98; a += 0.030) arc.push([0.50 + Math.cos(a) * rad, 0.91 + Math.sin(a) * rad * 0.54]);
-      drawPoly(arc, DEBUG_MESH ? GOLD.debug : (r < 2 ? GOLD.hot : GOLD.strong), DEBUG_MESH ? 2.6 : 1.12, DEBUG_MESH ? 1 : (0.42 - r * 0.025) * pulse);
+      drawPoly(arc, DEBUG_MESH ? GOLD.debug : (r < 2 ? GOLD.hot : GOLD.strong), DEBUG_MESH ? 2.6 : 1.55, DEBUG_MESH ? 1 : (0.58 - r * 0.035) * pulse);
     }
     // right deposit rings, unmistakable concentric structures
     for (var rr = 0; rr < 7; rr++) {
       var ring = [], rx = 0.038 + rr * 0.038, ry = 0.030 + rr * 0.031;
       for (var aa = 0; aa <= Math.PI * 2.02; aa += 0.035) ring.push([0.80 + Math.cos(aa) * rx, 0.57 + Math.sin(aa) * ry]);
-      drawPoly(ring, DEBUG_MESH ? GOLD.debug : (rr < 3 ? GOLD.hot : GOLD.strong), DEBUG_MESH ? 2.4 : 1.05, DEBUG_MESH ? 1 : (0.52 - rr * 0.040) * pulse);
+      drawPoly(ring, DEBUG_MESH ? GOLD.debug : (rr < 3 ? GOLD.hot : GOLD.strong), DEBUG_MESH ? 2.4 : 1.55, DEBUG_MESH ? 1 : (0.68 - rr * 0.052) * pulse);
     }
   }
 
@@ -280,7 +281,7 @@
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (!DEBUG_MESH) {
       var glow = ctx.createRadialGradient(W * 0.50, H * 0.72, 0, W * 0.50, H * 0.72, W * 0.82);
-      glow.addColorStop(0, 'rgba(190,105,12,0.12)'); glow.addColorStop(0.45, 'rgba(95,48,4,0.060)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+      glow.addColorStop(0, 'rgba(206,126,18,0.055)'); glow.addColorStop(0.45, 'rgba(112,57,5,0.028)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = glow; ctx.fillRect(0, H * 0.32, W, H * 0.76);
     }
     for (var i = 0; i < terrain.segments.length; i++) {
@@ -289,10 +290,10 @@
       var midX = (A.x + B.x) * 0.5 / W;
       var edgeFade = 1.0 - 0.58 * smooth(0.58, 1.0, Math.abs(midX - 0.5) * 2.0);
       var shimmer = DEBUG_MESH ? 1 : (0.92 + 0.08 * Math.sin(t * 0.42 + s.p));
-      var alpha = DEBUG_MESH ? 0.92 : clamp((0.10 + s.s * 0.42) * depth * edgeFade * shimmer, 0.045, 0.62);
+      var alpha = DEBUG_MESH ? 0.50 : clamp((0.10 + s.s * 0.56) * depth * edgeFade * shimmer, 0.055, 0.72);
       var color = DEBUG_MESH ? GOLD.debug : (s.s > 0.92 ? GOLD.hot : (s.s > 0.55 ? GOLD.strong : GOLD.mid));
       ctx.strokeStyle = rgba(color, alpha);
-      ctx.lineWidth = DEBUG_MESH ? 1.8 : (0.38 + Math.min(1.0, s.s) * 0.50);
+      ctx.lineWidth = DEBUG_MESH ? 0.9 : (0.54 + Math.min(1.0, s.s) * 0.66);
       ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
     }
     drawSignatures(t);
