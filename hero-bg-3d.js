@@ -106,14 +106,14 @@
       launchCanvasFallback(canvas, 'webgl-constructor-failed');
       return;
     }
-    renderer.setClearColor(0x020202, 1);
+    renderer.setClearColor(0x020201, 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
     renderer.setSize(size.w, size.h, false);
     renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputColorSpace;
 
     // Force canvas element to near-black CSS background so the body white
     // does not bleed through when WebGL paints its opaque framebuffer.
-    canvas.style.background = 'rgb(2,2,2)';
+    canvas.style.background = 'rgb(2,2,1)';
 
     var glContext = renderer.getContext();
     if (!glContext || glContext.isContextLost()) {
@@ -122,7 +122,7 @@
     }
 
     var scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x020202, 0.0085);
+    scene.fog = new THREE.FogExp2(0x020201, 0.0085);
 
     var camera = new THREE.PerspectiveCamera(46, size.w / size.h, 0.1, 900);
     camera.position.set(0, 26, 118);

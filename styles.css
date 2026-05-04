@@ -199,6 +199,41 @@ button {
   flex-shrink: 0;
 }
 
+.nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.nav__brand-symbol {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.nav__brand-wordmark {
+  height: 18px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .nav__brand-symbol {
+    width: 24px;
+    height: 24px;
+  }
+
+  .nav__brand-wordmark {
+    height: 16px;
+    max-width: 128px;
+  }
+}
+
 .nav__logo-mark {
   width: 32px;
   height: 32px;
@@ -375,7 +410,39 @@ button {
   align-items: center;
   padding: var(--space-32) 0 var(--space-20);
   overflow: hidden;
-  background: rgb(2,2,2);
+  background:
+    radial-gradient(
+      ellipse at 50% 42%,
+      rgba(146, 92, 18, 0.14) 0%,
+      rgba(120, 76, 14, 0.09) 24%,
+      rgba(65, 39, 8, 0.045) 48%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse at 50% 72%,
+      rgba(170, 109, 22, 0.10) 0%,
+      rgba(120, 76, 14, 0.06) 30%,
+      rgba(30, 18, 4, 0.035) 58%,
+      transparent 78%
+    ),
+    radial-gradient(
+      ellipse at 28% 58%,
+      rgba(120, 76, 14, 0.055) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 72% 60%,
+      rgba(120, 76, 14, 0.05) 0%,
+      transparent 52%
+    ),
+    linear-gradient(
+      180deg,
+      #010101 0%,
+      #030201 26%,
+      #060401 52%,
+      #030201 78%,
+      #010101 100%
+    );
 }
 
 /* Ambient warm glow behind hero */
@@ -567,7 +634,7 @@ button {
   z-index: -1;
   pointer-events: none;
   border-radius: 999px;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.38) 36%, rgba(0,0,0,0.14) 66%, transparent 100%);
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.30) 36%, rgba(0,0,0,0.10) 66%, transparent 100%);
   filter: blur(22px);
 }
 
@@ -1185,7 +1252,30 @@ button {
 }
 
 .footer__brand {
-  max-width: 280px;
+  max-width: 320px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.footer__brand-symbol {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex: 0 0 auto;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 14px rgba(196, 129, 31, 0.16));
+}
+
+@media (max-width: 640px) {
+  .footer__brand {
+    gap: 0.7rem;
+  }
+
+  .footer__brand-symbol {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .footer__brand-name {
