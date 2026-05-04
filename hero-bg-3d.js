@@ -1,8 +1,8 @@
 /**
- * Afriplan — Final Depth Pass
+ * Afriplan — Screenshot Beautiful WebGL Hero
  * Source of truth: Screenshot 2026-05-02 224224.png
- * Changes: deeper star layers, spatial halos, receding mesh footprint,
- * integrated topological motifs, ocean-in-space undulation.
+ * Three.js/WebGL renderer: full-width topographic mesh + wireframe polyhedrons
+ * + orbit rings/moons + depth starfield. Designed for am.issalabs.xyz.
  */
 (function () {
   'use strict';
@@ -91,6 +91,7 @@
 
     readSize();
 
+    // Opaque WebGL canvas. No alpha trap, no transparent black failure.
     var renderer;
     try {
       renderer = new THREE.WebGLRenderer({
@@ -108,21 +109,22 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
     renderer.setSize(size.w, size.h, false);
     renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputColorSpace;
-    // Force the canvas element CSS background to near-black so the body white
-    // does not bleed through when WebGL paints an opaque framebuffer.
-    // Use background shorthand to ensure it overrides any inline background property.
+
+    // Force canvas element to near-black CSS background so the body white
+    // does not bleed through when WebGL paints its opaque framebuffer.
     canvas.style.background = 'rgb(2,2,2)';
     // Also fill the canvas with dark pixels immediately — this guarantees a dark
     // background even if the WebGL context takes a moment to render the first frame.
-    (function(){
+    (function () {
       try {
         var ctx2d = canvas.getContext('2d', { alpha: false });
         if (ctx2d) {
           ctx2d.fillStyle = 'rgb(2,2,2)';
-          ctx2d.fillRect(0, 0, canvas.width || size.w, canvas.height || size.h);
+          ctx2d.fillRect(0, 0, canvas.width, canvas.height);
         }
-      } catch(e){}
+      } catch (e) { /* ignore */ }
     })();
+
     var glContext = renderer.getContext();
     if (!glContext || glContext.isContextLost()) {
       launchCanvasFallback(canvas, 'webgl-context-lost-at-init');
@@ -130,15 +132,14 @@
     }
 
     var scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x020202, 0.0072);
+    scene.fog = new THREE.FogExp2(0x020202, 0.0085);
 
     var camera = new THREE.PerspectiveCamera(46, size.w / size.h, 0.1, 900);
     camera.position.set(0, 26, 118);
     camera.lookAt(0, 2, -44);
 
     // ────────────────────────────────────────────────────────────────────────
-    // Layer 0: Spatial depth backdrop — very subtle dark halos for z-feel.
-    // NOT a bright wash. Near-black with faint spatial presence halos.
+    // Layer 0: deep radial WebGL backdrop, independent from CSS aurora.
     // ────────────────────────────────────────────────────────────────────────
     var backdropUniforms = {
       uTime: { value: 0 },
@@ -164,92 +165,64 @@
           'uniform float uTime;',
           'uniform float uAspect;',
           'uniform vec2 uMouse;',
+          'float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }',
+          'float noise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f); return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),u.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),u.x),u.y); }',
+          'float fbm(vec2 p){ float v=0.0; float a=0.5; for(int i=0;i<4;i++){ v+=a*noise(p); p*=2.03; a*=0.5; } return v; }',
           'void main(){',
           '  vec2 uv = vUv;',
           '  vec2 p = (uv - 0.5) * vec2(uAspect, 1.0);',
-          '  vec2 cursor = vec2(uMouse.x * 0.04, uMouse.y * 0.018);',
-          '  float d = length(p - cursor);',
-          '  float d2 = length(p - vec2(0.08, 0.04));',
-          '  float d3 = length(p - vec2(-0.12, -0.06));',
-          '  // Deep spatial halos — barely perceptible, subconscious depth only',
-          '  float halo1 = smoothstep(0.55, 0.05, d) * 0.009;',
-          '  float halo2 = smoothstep(0.70, 0.10, d2) * 0.005;',
-          '  float halo3 = smoothstep(0.45, 0.05, d3) * 0.007;',
-          '  // Upper-center depth swell (horizon feel)',
-          '  float horizon = smoothstep(0.60, 0.10, abs(p.y + 0.15)) * 0.004;',
-          '  vec3 black = vec3(0.006, 0.006, 0.005);',
-          '  vec3 amber = vec3(0.52, 0.32, 0.08);',
+          '  vec2 center = vec2(uMouse.x * 0.055, -0.02 + uMouse.y * 0.025);',
+          '  float d = length(p - center);',
+          '  float n = fbm(uv * 3.2 + vec2(uTime * 0.018, -uTime * 0.012));',
+          '  float core = smoothstep(0.72, 0.03, d);',
+          '  float band = smoothstep(0.95, 0.08, abs((p.y + p.x * 0.18) + sin(uv.x * 2.4 + uTime * 0.05) * 0.025));',
+          '  vec3 black = vec3(0.006,0.006,0.005);',
+          '  vec3 amber = vec3(0.79,0.55,0.20);',
+          '  vec3 gold = vec3(0.96,0.72,0.30);',
           '  vec3 col = black;',
-          '  col += amber * (halo1 + halo2 + halo3 + horizon);',
-          '  // Gentle vignette toward edges for spatial depth',
-          '  col *= 1.0 - smoothstep(0.30, 0.90, d) * 0.50;',
+          '  col += amber * core * (0.12 + n * 0.05);',
+          '  col += gold * band * 0.016;',
+          '  col *= 1.0 - smoothstep(0.42, 1.05, d) * 0.84;',
           '  gl_FragColor = vec4(col, 1.0);',
           '}'
         ].join('\n')
       })
     );
     backdrop.renderOrder = -100;
-    // Re-engage: values tuned low enough to not wash out text.
-    scene.add(backdrop);
+    // Do NOT add to scene — backdrop is a full-frame quad that paints bright
+    // amber/gold at full opacity, washing out hero text. The fog still affects
+    // 3D objects (terrain, stars, crystals) without an opaque background plane.
+    // scene.add(backdrop);
 
     // ────────────────────────────────────────────────────────────────────────
-    // Layer 1: Deep layered starfield — more numerous, z-stratified.
-    // Palette: deep amber #784C0E → warm amber #925C12 → gold #AA6D16 → bright #C4811F → orange-gold #D6912C
-    // Ratios: 74% deep far, 18% mid warm, 6% brighter near, 2% accent highlights.
+    // Layer 1: depth-varied starfield. Moderate; expensive, not noisy.
     // ────────────────────────────────────────────────────────────────────────
-    var STAR_BANDS = [
-      // [count, minDepth, maxDepth, rMin, rMax, gMin, gMax, bMax, sizeMult, alphaMult]
-      // Deep far layer — tiny, dim, many
-      { count: isMobile ? 640 : 1628, minD: 0.00, maxD: 0.40, r: [0.26, 0.36], g: [0.14, 0.22], b: [0.02, 0.07], sz: [0.30, 0.70], al: [0.18, 0.36] },
-      // Mid-far warm layer
-      { count: isMobile ? 200 : 410,  minD: 0.30, maxD: 0.65, r: [0.38, 0.52], g: [0.20, 0.30], b: [0.04, 0.09], sz: [0.50, 1.10], al: [0.28, 0.48] },
-      // Mid-near warmer layer
-      { count: isMobile ?  80: 155,  minD: 0.55, maxD: 0.82, r: [0.52, 0.66], g: [0.28, 0.38], b: [0.06, 0.12], sz: [0.85, 1.60], al: [0.38, 0.62] },
-      // Near highlights — sparse, gold-amber
-      { count: isMobile ?  28:  75,  minD: 0.72, maxD: 1.00, r: [0.66, 0.78], g: [0.38, 0.50], b: [0.08, 0.16], sz: [1.20, 2.20], al: [0.52, 0.78] },
-      // Accent sparks — very sparse, orange-gold
-      { count: isMobile ?  12:  32,  minD: 0.85, maxD: 1.00, r: [0.76, 0.88], g: [0.48, 0.60], b: [0.10, 0.20], sz: [1.60, 2.80], al: [0.65, 0.90] }
-    ];
-
-    var totalStars = STAR_BANDS.reduce(function(s, b){ return s + b.count; }, 0);
-    var starPos = new Float32Array(totalStars * 3);
-    var starCol = new Float32Array(totalStars * 3);
-    var starSz  = new Float32Array(totalStars);
-
-    var si = 0;
-    for (var bi = 0; bi < STAR_BANDS.length; bi++) {
-      var band = STAR_BANDS[bi];
-      for (var i = 0; i < band.count; i++) {
-        var depth = band.minD + Math.random() * (band.maxD - band.minD);
-        var i3 = si * 3;
-        starPos[i3]     = (Math.random() - 0.5) * 290;
-        starPos[i3 + 1] = -4 + Math.random() * 96;
-        starPos[i3 + 2] = -190 + depth * 175;
-        var r = band.r[0] + Math.random() * (band.r[1] - band.r[0]);
-        var g = band.g[0] + Math.random() * (band.g[1] - band.g[0]);
-        var b = band.b[0] + Math.random() * (band.b[1] - band.b[0]);
-        starCol[i3]     = r;
-        starCol[i3 + 1] = g;
-        starCol[i3 + 2] = b;
-        starSz[si] = band.sz[0] + Math.random() * (band.sz[1] - band.sz[0]);
-        si++;
-      }
+    var starCount = isMobile ? 460 : 1350;
+    var starPos = new Float32Array(starCount * 3);
+    var starCol = new Float32Array(starCount * 3);
+    var starSize = new Float32Array(starCount);
+    for (var i = 0; i < starCount; i++) {
+      var i3 = i * 3;
+      var depth = Math.random();
+      starPos[i3] = (Math.random() - 0.5) * 260;
+      starPos[i3 + 1] = -4 + Math.random() * 92;
+      starPos[i3 + 2] = -180 + Math.random() * 170;
+      var warm = 0.50 + Math.random() * 0.30;
+      starCol[i3] = 0.42 + warm * 0.28;
+      starCol[i3 + 1] = 0.24 + warm * 0.22;
+      starCol[i3 + 2] = 0.05 + warm * 0.10;
+      starSize[i] = 0.55 + Math.pow(depth, 2.0) * (isMobile ? 1.2 : 2.5);
     }
-
     var starGeo = new THREE.BufferGeometry();
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-    starGeo.setAttribute('color',    new THREE.BufferAttribute(starCol, 3));
-    starGeo.setAttribute('aSize',    new THREE.BufferAttribute(starSz,  1));
-
+    starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+    starGeo.setAttribute('aSize', new THREE.BufferAttribute(starSize, 1));
     var starMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
       blending: THREE.NormalBlending,
       vertexColors: true,
-      uniforms: {
-        uTime:  { value: 0 },
-        uMouse: { value: new THREE.Vector2() }
-      },
+      uniforms: { uTime: { value: 0 }, uMouse: { value: new THREE.Vector2() } },
       vertexShader: [
         'attribute float aSize;',
         'varying vec3 vColor;',
@@ -264,17 +237,15 @@
         '  float attract = smoothstep(96.0, 0.0, dist);',
         '  vec2 radial = delta / max(dist, 0.001);',
         '  vec2 tangent = vec2(-radial.y, radial.x);',
-        '  // Subtle elegant aggregation — elegant, not chaotic',
-        '  p.xy += radial * attract * (5.0 + aSize * 1.4);',
-        '  p.xy += tangent * attract * (1.2 + aSize * 0.32) * sin(uTime * 0.7 + dist * 0.04);',
-        '  p.z += attract * (3.5 + aSize * 1.0);',
-        '  // Slow depth drift for far layers',
-        '  p.x += sin(uTime * 0.08 + position.z * 0.025) * 0.28;',
-        '  p.y += cos(uTime * 0.07 + position.x * 0.018) * 0.18;',
+        '  p.xy += radial * attract * (6.5 + aSize * 1.8);',
+        '  p.xy += tangent * attract * (1.8 + aSize * 0.45) * sin(uTime * 0.9 + dist * 0.05);',
+        '  p.z += attract * (4.5 + aSize * 1.4);',
+        '  p.x += sin(uTime * 0.12 + position.z * 0.03) * 0.35;',
+        '  p.y += cos(uTime * 0.10 + position.x * 0.02) * 0.22;',
         '  vPulse = attract;',
-        '  vColor = mix(color, vec3(0.70, 0.44, 0.10), attract * 0.42);',
+        '  vColor = mix(color, vec3(0.66, 0.42, 0.12), attract * 0.55);',
         '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
-        '  gl_PointSize = aSize * (210.0 / max(38.0, -mv.z)) * (1.0 + attract * 0.55);',
+        '  gl_PointSize = aSize * (210.0 / max(35.0, -mv.z)) * (1.0 + attract * 0.65);',
         '  gl_Position = projectionMatrix * mv;',
         '}'
       ].join('\n'),
@@ -285,7 +256,7 @@
         'void main(){',
         '  vec2 d = gl_PointCoord - vec2(0.5);',
         '  float a = 1.0 - smoothstep(0.05, 0.48, length(d));',
-        '  a *= (0.30 + vPulse * 0.32);',
+        '  a *= (0.32 + vPulse * 0.36);',
         '  gl_FragColor = vec4(vColor, a);',
         '}'
       ].join('\n')
@@ -295,27 +266,14 @@
     scene.add(stars);
 
     // ────────────────────────────────────────────────────────────────────────
-    // Layer 2: Topographic mesh — redesigned footprint for receding depth.
-    // Key changes:
-    //   - Edge falloff stronger: mesh tapers at lateral edges
-    //   - Horizon fade stronger: mesh appears to recede from near viewer
-    //   - Lateral asymmetry: left/right fade differently for authored feel
-    //   - Position: near edge lower, far edge higher (perspective depth)
-    //   - 3 slow ocean-in-space displacement layers
-    //   - Stronger topological bumps (integrated motifs)
+    // Layer 2: full-width topographic mesh. This is the visual foundation.
+    // It deliberately overfills the viewport horizontally like the screenshot.
     // ────────────────────────────────────────────────────────────────────────
     var terrainUniforms = {
-      uTime:  { value: 0 },
+      uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2() }
     };
-
-    var terrainGeo = new THREE.PlaneGeometry(
-      isMobile ? 330 : 430,
-      isMobile ? 160 : 210,
-      isMobile ? 74  : 132,
-      isMobile ? 36  : 58
-    );
-
+    var terrainGeo = new THREE.PlaneGeometry(430, 210, isMobile ? 74 : 132, isMobile ? 36 : 58);
     var terrainMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
@@ -328,7 +286,6 @@
         'uniform vec2 uMouse;',
         'varying float vIntensity;',
         'varying vec2 vUv;',
-        'varying float vFeature;',   // track feature zones for fragment coloring
         'float bump(vec2 p, vec2 c, float power, float radius){',
         '  float d = distance(p, c);',
         '  return power * exp(-(d*d) / radius);',
@@ -337,40 +294,13 @@
         '  vUv = uv;',
         '  vec3 p = position;',
         '  float t = uTime;',
-
-        // ── Layer 1: very slow deep swell (ocean base)
-        '  float swell1 = sin(p.x * 0.022 + t * 0.14) * sin(p.y * 0.028 - t * 0.11) * 4.2;',
-        // ── Layer 2: mid-frequency contour drift
-        '  float swell2 = sin((p.x * 0.038 + p.y * 0.030) + t * 0.28) * 2.8;',
-        // ── Layer 3: very low frequency horizon breathing
-        '  float swell3 = sin(p.x * 0.014 - t * 0.08) * cos(p.y * 0.018 + t * 0.06) * 3.5;',
-
         '  float baseH = 0.0;',
         '  baseH += sin(p.x * 0.035) * 5.5;',
         '  baseH += sin(p.y * 0.055) * 4.0;',
         '  baseH += sin((p.x + p.y) * 0.026) * 8.0;',
-
-        // ── Stronger topological motifs (integrated into terrain) ──
-        // Left serpentine strata — strong left-side rise
-        '  float leftStrata = bump(p.xy, vec2(-78.0, 18.0), 22.0, 2800.0);',
-        // Central angular plateau — rises near center
-        '  float plateau   = bump(p.xy, vec2(  8.0, -4.0), 18.0, 2400.0);',
-        // Lower-center basin depression
-        '  float basin     = bump(p.xy, vec2(  4.0, 58.0), 16.0, 3600.0);',
-        // Right concentric ring field — ring emphasis
-        '  float ringField = bump(p.xy, vec2( 62.0, -14.0), 14.0, 2200.0);',
-        // Lower-right survey fan
-        '  float fanField  = bump(p.xy, vec2( 72.0, 38.0), 12.0, 2000.0);',
-
-        '  baseH += leftStrata * 1.0;',
-        '  baseH += plateau   * 1.0;',
-        '  baseH -= basin    * 0.8;',
-        '  baseH += ringField * 0.7;',
-        '  baseH += fanField  * 0.6;',
-
-        // Track feature zone for fragment shader color
-        '  vFeature = max(leftStrata, max(plateau, max(ringField, fanField)));',
-
+        '  baseH += bump(p.xy, vec2(-74.0, 22.0), 18.0, 2600.0);',
+        '  baseH += bump(p.xy, vec2(58.0, -8.0), 15.0, 2200.0);',
+        '  baseH -= bump(p.xy, vec2(4.0, 52.0), 12.0, 3400.0);',
         '  float breath = 0.92 + 0.08 * sin(t * 0.55 + uv.y * 2.4);',
         '  float ripple = sin((p.x * 0.020 + p.y * 0.016) - t * 0.42) * 0.85 * smoothstep(0.08, 1.0, uv.y);',
         '  vec2 cursor = vec2(uMouse.x * 95.0, uMouse.y * 32.0 - 8.0);',
@@ -378,7 +308,6 @@
         '  float dist = length(delta);',
         '  float cursorLift = smoothstep(72.0, 0.0, dist);',
         '  float h = baseH * breath + ripple + cursorLift * 4.2;',
-        '  h += swell1 + swell2 + swell3;',
         '  float contour = abs(sin(h * 0.44 + t * 0.10));',
         '  vIntensity = 0.24 + smoothstep(0.48, 1.0, contour) * 0.50 + smoothstep(0.15, 0.82, uv.y) * 0.18 + cursorLift * 0.14;',
         '  p.z += h;',
@@ -389,49 +318,32 @@
         'precision mediump float;',
         'varying float vIntensity;',
         'varying vec2 vUv;',
-        'varying float vFeature;',
         'void main(){',
-        // Constrained footprint — mesh contained in center, not edge-to-edge
-        '  float leftEdge   = smoothstep(0.00, 0.22, vUv.x);',
-        '  float rightEdge  = smoothstep(1.00, 0.78, vUv.x);',
-        '  float edgeFade   = leftEdge * rightEdge;',
-        // Horizon fade — mesh recedes away from viewer (near bottom = denser)
-        '  float horizonFade = smoothstep(0.02, 0.22, vUv.y);',
-        // Lateral asymmetry — left fades slightly differently than right
-        '  float asymFade = 0.70 + 0.30 * (1.0 - abs(vUv.x - 0.50) * 2.0);',
-
-        '  vec3 deepAmber  = vec3(0.36, 0.22, 0.04);',
-        '  vec3 gold       = vec3(0.52, 0.32, 0.08);',
-        '  vec3 brightGold = vec3(0.68, 0.44, 0.10);',
-        '  vec3 col = mix(deepAmber, gold, vIntensity);',
-        '  col = mix(col, brightGold, smoothstep(0.55, 1.0, vIntensity) * 0.45);',
-        // Feature zones get subtle warm tint
-        '  col = mix(col, vec3(0.72, 0.48, 0.12), smoothstep(0.40, 0.90, vFeature) * 0.25);',
-
-        '  float baseAlpha = 0.09 + vIntensity * 0.36;',
-        '  float alpha = baseAlpha * edgeFade * horizonFade * asymFade * 0.62;',
+        '  float edgeFade = smoothstep(0.00, 0.10, vUv.x) * smoothstep(1.00, 0.90, vUv.x);',
+        '  float horizonFade = smoothstep(0.03, 0.20, vUv.y);',
+        '  vec3 gold = vec3(0.48, 0.30, 0.06);',
+        '  vec3 bright = vec3(0.66, 0.42, 0.09);',
+        '  vec3 col = mix(gold, bright, vIntensity);',
+        '  float alpha = (0.11 + vIntensity * 0.34) * edgeFade * horizonFade * 0.62;',
         '  gl_FragColor = vec4(col, alpha);',
         '}'
       ].join('\n')
     });
-
     var terrain = new THREE.Mesh(terrainGeo, terrainMat);
-    // Rotation and position create receding-field perspective:
-    // Near edge of plane appears lower/closer, far edge appears to recede.
-    terrain.rotation.x = -Math.PI / 2.42;
-    terrain.position.set(0, -118, -74);
-    terrain.scale.set(1.22, 1.08, 1.0);
+    terrain.rotation.x = -Math.PI / 2.55;
+    terrain.position.set(0, -114, -70);
+    terrain.scale.set(1.34, 1.10, 1.0);
     terrain.renderOrder = 1;
     scene.add(terrain);
 
-    // Mineral-map sparkle point lattice
+    // A subtle point lattice on the same field gives the screenshot its mineral-map sparkle.
     var lattice = new THREE.Points(
       terrainGeo.clone(),
       new THREE.PointsMaterial({
         color: 0x925c12,
         size: isMobile ? 0.34 : 0.46,
         transparent: true,
-        opacity: 0.14,
+        opacity: 0.15,
         depthWrite: false,
         sizeAttenuation: true,
         blending: THREE.NormalBlending
@@ -551,8 +463,8 @@
     }
     var attractors = [
       addAttractor(-42, -8, -54, 1.4, 5.9, 0.0),
-      addAttractor( 38,-16, -68, 1.1, 5.0, 2.0),
-      addAttractor(  8, 18, -60, 1.8, 7.0, 4.2)
+      addAttractor( 38, -16, -68, 1.1, 5.0, 2.0),
+      addAttractor(  8,  18, -60, 1.8, 7.0, 4.2)
     ];
 
     // ────────────────────────────────────────────────────────────────────────
@@ -565,9 +477,9 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
       renderer.setSize(size.w, size.h, false);
       backdropUniforms.uAspect.value = size.w / size.h;
-      // Terrain scale: slightly narrower, more aspect-correct for receding field
-      var aspectBoost = Math.max(1.0, (size.w / Math.max(1, size.h)) / 1.78);
-      terrain.scale.x = 1.22 * aspectBoost;
+      // Make the terrain always overfill the viewport width, including ultra-wide.
+      var aspectBoost = Math.max(1.0, (size.w / Math.max(1, size.h)) / 1.65);
+      terrain.scale.x = 1.34 * aspectBoost;
       lattice.scale.copy(terrain.scale);
     }
 
@@ -593,7 +505,6 @@
       starMat.uniforms.uTime.value = t;
       starMat.uniforms.uMouse.value.copy(dampedMouse);
 
-      // Very gentle terrain drift — no obvious wobble
       terrain.rotation.z = Math.sin(t * 0.055) * 0.004;
       lattice.rotation.copy(terrain.rotation);
 
@@ -635,15 +546,14 @@
     requestAnimationFrame(animate);
 
     window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'gradient-footprint-fix-02',
+      version: 'screenshot-beautiful-webgl-microfix-01',
       renderer: 'three-webgl',
-      terrainWidth: isMobile ? 330 : 430,
+      terrainWidth: 430,
       terrainSegments: isMobile ? '74x36' : '132x58',
-      fullWidthMesh: false,
-      recedingMesh: true,
+      fullWidthMesh: true,
       polyhedrons: crystals.length,
       orbitRings: 2,
-      starCount: totalStars
+      starCount: starCount
     };
   }
 

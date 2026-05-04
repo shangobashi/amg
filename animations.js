@@ -193,7 +193,8 @@
             var ratio = scrollY / heroHeight;
             if (content) {
               content.style.transform = 'translateY(' + (ratio * 30) + 'px)';
-              content.style.opacity = 1 - ratio * 0.6;
+              // Keep content fully opaque — opacity fade causes hero content to disappear
+              content.style.opacity = 1;
             }
           }
           ticking = false;
