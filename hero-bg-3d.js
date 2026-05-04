@@ -1,227 +1,350 @@
-/**
- * Afriplan - Hero 3D Background
- * Golden Screenshot Forensic Restoration v2
- */
-(function () {
- 'use strict';
- var canvasEl = document.getElementById('heroBgCanvas');
- if (!canvasEl) return;
- var heroEl = document.querySelector('.hero');
- function getHeroSize() {
-  var ww = window.innerWidth, wh = window.innerHeight;
-  var hw = heroEl ? heroEl.offsetWidth : 0, hh = heroEl ? heroEl.offsetHeight : 0;
-  if (ww < 100) ww = 1280;
-  if (wh < 100) wh = 720;
-  if (hw < 100) hw = ww;
-  if (hh < 100) hh = wh;
-  return { w: Math.max(ww, hw), h: Math.max(wh, hh) };
- }
- var heroSize = getHeroSize();
- console.log('[Afriplan] heroSize:', heroSize.w, 'x', heroSize.h, '| window:', window.innerWidth, 'x', window.innerHeight);
- var isMobile = heroSize.w < 768;
- var renderer = new THREE.WebGLRenderer({
-  canvas: canvasEl, alpha: false, antialias: !isMobile, powerPreference: 'high-performance'
- });
- renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.0 : 2));
- renderer.setSize(heroSize.w, heroSize.h);
- renderer.setClearColor(0x050505, 1);
- var scene = new THREE.Scene();
- var camera = new THREE.PerspectiveCamera(50, heroSize.w / heroSize.h, 0.1, 1000);
- camera.position.set(0, 0, 90);
- camera.lookAt(0, 0, 0);
- (function () {
-  var bw = Math.max(2, Math.floor(heroSize.w * 0.25));
-  var bh = Math.max(2, Math.floor(heroSize.h * 0.25));
-  var bc = document.createElement('canvas');
-  bc.width = bw; bc.height = bh;
-  var ctx = bc.getContext('2d');
-  var g = ctx.createRadialGradient(bw * 0.5, bh * 0.38, 0, bw * 0.5, bh * 0.38, bw * 0.55);
-  g.addColorStop(0.0, 'rgba(26,18,8,0.55)');
-  g.addColorStop(0.4, 'rgba(18,12,5,0.25)');
-  g.addColorStop(0.75, 'rgba(5,5,5,0.08)');
-  g.addColorStop(1.0, 'rgba(5,5,5,0.00)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, bw, bh);
-  var tex = new THREE.CanvasTexture(bc);
-  var bg = new THREE.Mesh(
-   new THREE.PlaneGeometry(heroSize.w * 1.1, heroSize.h * 1.1),
-   new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })
-  );
-  bg.position.z = -60;
-  scene.add(bg);
- })();
- (function () {
-  var count = isMobile ? 120 : 300;
-  var maxX = heroSize.w, maxY = heroSize.h * 0.58;
-  var palette = [[74,50,16],[100,65,20],[146,92,18],[196,129,31],[212,175,55]];
-  var pW = [0.40, 0.30, 0.18, 0.09, 0.03];
-  var rng = 9183;
-  function rand() { rng = (rng * 1664525 + 1013904223) & 0xffffffff; return (rng >>> 0) / 0xffffffff; }
-  var sData = [];
-  for (var i = 0; i < count; i++) {
-   var xf = rand(), yf = rand();
-   var cx = Math.abs(xf - 0.5) * 2.0;
-   yf = yf * (1.0 - Math.pow(cx, 2.0) * 0.6);
-   var sx = Math.floor(xf * maxX), sy = Math.floor(yf * maxY);
-   var r = rand(), ci = 0, cum = 0;
-   for (var j = 0; j < pW.length; j++) { cum += pW[j]; if (r < cum) { ci = j; break; } }
-   var sz = rand() < 0.72 ? 1 : 2;
-   sData.push({ x: sx, y: sy, c: palette[ci], sz: sz, a: 0.28 + rand() * 0.56 });
+(function() {
+  'use strict';
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
-  var sc = document.createElement('canvas');
-  sc.width = 4; sc.height = count * 4;
-  var sctx = sc.getContext('2d');
-  for (var i = 0; i < count; i++) {
-   var d = sData[i];
-   sctx.fillStyle = 'rgba(' + d.c[0] + ',' + d.c[1] + ',' + d.c[2] + ',' + d.a + ')';
-   sctx.fillRect(0, i * 4, d.sz, d.sz);
+
+  function init() {
+    var old = document.getElementById('heroBgCanvas');
+    if (old) old.remove();
+
+    var starsCanvas = document.getElementById('heroStarsCanvas');
+    if (!starsCanvas) {
+      starsCanvas = document.createElement('canvas');
+      starsCanvas.id = 'heroStarsCanvas';
+      starsCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;background:transparent;z-index:1;';
+      var hero = document.querySelector('.hero');
+      if (hero) hero.appendChild(starsCanvas);
+    }
+
+    var meshCanvas = document.getElementById('heroMeshCanvas');
+    if (!meshCanvas) {
+      meshCanvas = document.createElement('canvas');
+      meshCanvas.id = 'heroMeshCanvas';
+      meshCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;background:transparent;z-index:3;';
+      var hero2 = document.querySelector('.hero');
+      if (hero2) hero2.appendChild(meshCanvas);
+    }
+
+    function resize() {
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      starsCanvas.width = w;
+      starsCanvas.height = h;
+      meshCanvas.width = w;
+      meshCanvas.height = h;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var stars = initStars(starsCanvas);
+    var constellation = initConstellation(starsCanvas);
+    var mesh = initMesh(meshCanvas);
+
+    var pointerX = window.innerWidth / 2, pointerY = window.innerHeight / 2;
+    var pointerVX = 0, pointerVY = 0;
+    var lastPointerX = pointerX, lastPointerY = pointerY;
+
+    window.addEventListener('mousemove', function(e) {
+      pointerVX = e.clientX - lastPointerX;
+      pointerVY = e.clientY - lastPointerY;
+      lastPointerX = pointerX;
+      lastPointerY = pointerY;
+      pointerX = e.clientX;
+      pointerY = e.clientY;
+    });
+
+    var startTime = performance.now();
+
+    function animate() {
+      var t = (performance.now() - startTime) / 1000;
+
+      var sctx = starsCanvas.getContext('2d');
+      sctx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+      drawStars(sctx, starsCanvas, stars, t);
+
+      updateConstellation(constellation, pointerX, pointerY, pointerVX, pointerVY, starsCanvas.width, starsCanvas.height, t);
+      drawConstellation(sctx, starsCanvas, constellation);
+
+      var mctx = meshCanvas.getContext('2d');
+      mctx.clearRect(0, 0, meshCanvas.width, meshCanvas.height);
+      drawMesh(mctx, meshCanvas, mesh, t);
+
+      pointerVX *= 0.92;
+      pointerVY *= 0.92;
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
   }
-  var starTex = new THREE.CanvasTexture(sc);
-  starTex.magFilter = THREE.NearestFilter;
-  starTex.minFilter = THREE.NearestFilter;
-  var count = isMobile ? 700 : 1500;
-  var sGeo = new THREE.BufferGeometry();
-  var sPos = new Float32Array(count * 3), sUV = new Float32Array(count * 2);
-  for (var i = 0; i < count; i++) {
-   sPos[i * 3] = sData[i].x - heroSize.w * 0.5;
-   sPos[i * 3 + 1] = sData[i].y - heroSize.h * 0.5;
-   sPos[i * 3 + 2] = -(Math.random() * 20);
-   sUV[i * 2] = (sData[i].sz === 1 ? 0.5 : 1.5) / 4;
-   sUV[i * 2 + 1] = (i * 4 + 0.5) / (count * 4);
-  }
-  sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-  sGeo.setAttribute('uv', new THREE.BufferAttribute(sUV, 2));
-  var sMat = new THREE.PointsMaterial({
-   size: isMobile ? 2.0 : 2.5,
-   map: starTex, transparent: true, depthWrite: false,
-   blending: THREE.AdditiveBlending, sizeAttenuation: false
-  });
-  scene.add(new THREE.Points(sGeo, sMat));
- })();
- var tUni = { uTime: { value: 0.0 } };
- var topoVert = [
-  'varying float vH; varying vec2 vUv; uniform float uTime;',
-  'void main(){',
-  ' vUv = uv; vec3 pos = position; float h = 0.0;',
-  ' float nx = pos.x * 0.007, ny = pos.y * 0.009;',
-  ' h = sin(nx*4.1+ny*3.3)*0.8 + sin(nx*7.7-ny*5.9)*0.4 + sin(nx*13.0+ny*11.0)*0.2;',
-  ' float lM = smoothstep(0.42,0.28,vUv.x)*smoothstep(0.62,0.45,vUv.y);',
-  ' float lb = sin(vUv.y*10.0+vUv.x*5.5+1.2)*0.5+0.5;',
-  ' float lc = sin(vUv.y*14.0+lb*3.14)*0.5+0.5;',
-  ' h += lM*(lb*2.5+lc*1.5-2.0);',
-  ' float pX = smoothstep(0.28,0.38,vUv.x)*smoothstep(0.72,0.62,vUv.x);',
-  ' float pY = smoothstep(0.50,0.42,vUv.y)*smoothstep(0.30,0.38,vUv.y);',
-  ' h = mix(h,0.0,pX*pY*0.85);',
-  ' float bX = smoothstep(0.28,0.38,vUv.x)*smoothstep(0.72,0.62,vUv.x);',
-  ' float bY = smoothstep(0.34,0.22,vUv.y);',
-  ' float a1 = sin(vUv.x*9.0+0.5)*0.5+0.5;',
-  ' float a2 = sin(vUv.x*6.5-1.2)*0.5+0.5;',
-  ' h += bX*bY*(a1*1.2+a2*0.8-0.8);',
-  ' float rdx = vUv.x-0.74, rdy = vUv.y-0.42;',
-  ' float rdist = sqrt(rdx*rdx*2.2+rdy*rdy*1.8);',
-  ' float rings = sin(rdist*22.0)*0.5+0.5;',
-  ' float rM = smoothstep(0.42,0.28,vUv.x)*smoothstep(0.58,0.42,vUv.y);',
-  ' h += rM*rings*2.0;',
-  ' float fX = (vUv.x-0.60)/0.35, fY = (0.22-vUv.y)/0.22;',
-  ' float iF = smoothstep(0.0,0.05,fY)*smoothstep(1.0,0.3,fX)*smoothstep(0.0,0.1,fX)*smoothstep(1.0,0.5,fY);',
-  ' float sl = sin((fX-fY)*3.14159*1.5*6.0+fY*4.0)*0.5+0.5;',
-  ' float sc2 = sin(fX*8.0+fY*5.0)*0.5+0.5;',
-  ' h += iF*(sl*1.8+sc2*0.9-1.0);',
-  ' vH = h; pos.z += h * 2.5;',
-  ' gl_Position = projectionMatrix * modelViewMatrix * vec4(pos,1.0);',
-  '}',
- ].join('\n');
- var topoFrag = [
-  'varying float vH; varying vec2 vUv; uniform float uTime;',
-  'void main(){',
-  ' vec3 lc = vec3(0.82,0.52,0.10), bc = vec3(0.04,0.035,0.03);',
-  ' float hv = clamp(vH*0.15+0.5,0.0,1.0);',
-  ' float cont = sin(vH*3.8)*0.5+0.5; cont = smoothstep(0.35,0.65,cont);',
-  ' float alpha = mix(0.38,0.92,cont*hv);',
-  ' gl_FragColor = vec4(mix(bc,lc,cont*0.85),alpha);',
-  '}',
- ].join('\n');
- var topoMat = new THREE.ShaderMaterial({
-  vertexShader: topoVert, fragmentShader: topoFrag,
-  uniforms: tUni, wireframe: true, transparent: true, depthWrite: false
- });
- var topoMesh = new THREE.Mesh(new THREE.PlaneGeometry(260, 160, 90, 60), topoMat);
- topoMesh.rotation.x = -Math.PI / 2.5;
- topoMesh.position.set(0, -22, -32);
- scene.add(topoMesh);
- function addIco(x, y, z, r, op) {
-  op = op || 0.18;
-  var m = new THREE.Mesh(
-   new THREE.IcosahedronGeometry(r, 0),
-   new THREE.MeshBasicMaterial({ color: 0xC9943A, wireframe: true, transparent: true, opacity: op, depthWrite: false })
-  );
-  m.position.set(x, y, z); scene.add(m);
- }
- function addTorus(x, y, z, sr, tr, op) {
-  op = op || 0.14;
-  var s = new THREE.Mesh(
-   new THREE.SphereGeometry(sr, 8, 6),
-   new THREE.MeshBasicMaterial({ color: 0xC9943A, wireframe: true, transparent: true, opacity: op * 0.8, depthWrite: false })
-  );
-  s.position.set(x, y, z); scene.add(s);
-  var t = new THREE.Mesh(
-   new THREE.TorusGeometry(tr, 0.25, 4, 20),
-   new THREE.MeshBasicMaterial({ color: 0xD4AF37, wireframe: true, transparent: true, opacity: op, depthWrite: false })
-  );
-  t.position.set(x, y, z);
-  t.rotation.x = Math.PI * 0.3;
-  t.rotation.z = Math.PI * 0.15;
-  scene.add(t);
- }
- addIco(-55, 20, -22, 9, 0.16);
- addTorus(-48, -5, -28, 2.5, 5.0, 0.13);
- addIco(52, 28, -28, 6.5, 0.15);
- addIco(30, 12, -18, 4.5, 0.14);
- addTorus(-5, 30, -38, 2.0, 4.2, 0.12);
- addIco(-32, 38, -35, 3.5, 0.12);
- var nodeDefs = [
-  { x: -38, y: 8, z: -18 },
-  { x: 42, y: 5, z: -25 },
-  { x: 12, y: 28, z: -30 },
-  { x: -18, y: -8, z: -15 },
-  { x: 55, y: -18, z: -35 },
-  { x: -60, y: 15, z: -40 },
-  { x: 28, y: 40, z: -45 }
- ];
- var attractors = nodeDefs.map(function (nd) {
-  var c = new THREE.Mesh(
-   new THREE.SphereGeometry(0.55, 6, 4),
-   new THREE.MeshBasicMaterial({ color: 0xD4AF37, transparent: true, opacity: 0.65, depthWrite: false })
-  );
-  c.position.set(nd.x, nd.y, nd.z); scene.add(c); return c;
- });
- window.addEventListener('resize', function () {
-  var hs = getHeroSize();
-  camera.aspect = hs.w / hs.h;
-  camera.updateProjectionMatrix();
-  renderer.setSize(hs.w, hs.h);
- });
- var clock = new THREE.Clock(), startTime = null;
- function animate(ts) {
-  requestAnimationFrame(animate);
-  if (startTime === null) startTime = ts;
-  var t = (ts - startTime) / 1000;
-  tUni.uTime.value = t * 0.04;
-  attractors.forEach(function (c, i) {
-   c.material.opacity = 0.35 + 0.15 * (0.8 + 0.2 * Math.sin(t * 1.2 + i * 1.9));
-  });
-  renderer.render(scene, camera);
- }
- requestAnimationFrame(animate);
- (function () {
-  if (location.search.indexOf('debugMesh=1') === -1) return;
-  topoMat.wireframe = true; topoMat.transparent = false; topoMat.opacity = 1.0;
-  topoMat.fragmentShader = 'varying float vH; void main(){gl_FragColor=vec4(1.0,0.85,0.2,1.0);}';
-  topoMat.needsUpdate = true;
-  var hc = document.querySelector('.hero__content');
-  if (hc) hc.style.display = 'none';
-  var c = document.getElementById('heroBgCanvas');
-  if (c) c.style.zIndex = '9999';
-  console.log('[DEBUG] Mesh proof mode active');
- })();
 })();
+
+// Seeded RNG
+function seededRandom(seed) {
+  var s = seed;
+  return function() {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+// Stars
+var STAR_PALETTE = [
+  'rgba(120, 76, 14, 0.38)',
+  'rgba(146, 92, 18, 0.50)',
+  'rgba(170, 109, 22, 0.62)',
+  'rgba(196, 129, 31, 0.74)',
+  'rgba(224, 160, 48, 0.84)'
+];
+
+function initStars(canvas) {
+  var isMobile = window.innerWidth < 768;
+  var count = isMobile ? 700 : 1500;
+  var rng = seededRandom(777);
+  var stars = [];
+
+  for (var i = 0; i < count; i++) {
+    var r = rng();
+    var colorIdx = r < 0.45 ? 0 : r < 0.73 ? 1 : r < 0.90 ? 2 : r < 0.98 ? 3 : 4;
+    var sizeBase = colorIdx < 2 ? 0.35 : colorIdx < 3 ? 0.7 : colorIdx < 4 ? 1.3 : 1.6;
+    var size = sizeBase + rng() * (colorIdx < 2 ? 0.2 : 0.3);
+
+    stars.push({
+      x: rng() * canvas.width,
+      y: rng() * canvas.height * 0.65,
+      size: size,
+      colorIdx: colorIdx,
+      alpha: 1.0,
+      phase: rng() * Math.PI * 2,
+      speed: 0.3 + rng() * 0.7
+    });
+  }
+  return stars;
+}
+
+function drawStars(ctx, canvas, stars, time) {
+  for (var i = 0; i < stars.length; i++) {
+    var s = stars[i];
+    var twinkle = 0.72 + 0.28 * Math.sin(time * s.speed + s.phase);
+    ctx.globalAlpha = twinkle;
+    ctx.fillStyle = STAR_PALETTE[s.colorIdx];
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1.0;
+}
+
+// Constellation
+function initConstellation(canvas) {
+  var isMobile = window.innerWidth < 768;
+  var count = isMobile ? 90 : 160;
+  var rng = seededRandom(555);
+  var nodes = [];
+
+  for (var i = 0; i < count; i++) {
+    nodes.push({
+      baseX: rng() * canvas.width,
+      baseY: rng() * canvas.height * 0.65,
+      x: 0, y: 0,
+      vx: 0, vy: 0,
+      size: 0.5 + rng() * 1.2,
+      depth: 0.3 + rng() * 0.7,
+      phase: rng() * Math.PI * 2,
+      speed: 0.2 + rng() * 0.4
+    });
+  }
+
+  for (var j = 0; j < nodes.length; j++) {
+    nodes[j].x = nodes[j].baseX;
+    nodes[j].y = nodes[j].baseY;
+  }
+
+  return nodes;
+}
+
+function updateConstellation(nodes, px, py, pvx, pvy, w, h, time) {
+  var springK = 0.018;
+  var damping = 0.88;
+
+  for (var i = 0; i < nodes.length; i++) {
+    var n = nodes[i];
+    n.vx += (n.baseX - n.x) * springK;
+    n.vy += (n.baseY - n.y) * springK;
+
+    var pdx = n.x - px;
+    var pdy = n.y - py;
+    var pdist = Math.sqrt(pdx * pdx + pdy * pdy) + 1;
+    if (pdist < 200) {
+      var push = (1 - pdist / 200) * 180;
+      n.vx += (pdx / pdist) * push * 0.04;
+      n.vy += (pdy / pdist) * push * 0.04;
+    }
+
+    var pSpeed = Math.sqrt(pvx * pvx + pvy * pvy);
+    if (pSpeed > 2) {
+      var swirl = pSpeed * 0.015 * (1 - pdist / 400);
+      n.vx += (-pvy * swirl) / (pdist + 50);
+      n.vy += (pvx * swirl) / (pdist + 50);
+    }
+
+    n.vx += Math.cos(time * n.speed + n.phase) * 0.05;
+    n.vy += Math.sin(time * n.speed * 0.7 + n.phase) * 0.03;
+
+    n.vx *= damping;
+    n.vy *= damping;
+
+    n.x += n.vx;
+    n.y += n.vy;
+  }
+}
+
+function drawConstellation(ctx, canvas, nodes) {
+  ctx.strokeStyle = 'rgba(180, 115, 30, 0.12)';
+  ctx.lineWidth = 0.5;
+
+  for (var i = 0; i < nodes.length; i++) {
+    for (var j = i + 1; j < nodes.length; j++) {
+      var a = nodes[i], b = nodes[j];
+      var dx = a.x - b.x, dy = a.y - b.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.globalAlpha = (1 - dist / 120) * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  for (var k = 0; k < nodes.length; k++) {
+    var n = nodes[k];
+    ctx.globalAlpha = 0.3 + n.depth * 0.4;
+    ctx.fillStyle = 'rgba(200, 140, 40, 0.7)';
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.size * n.depth, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 1.0;
+}
+
+// Geological Mesh
+function initMesh(canvas) {
+  var cols = 28, rows = 16;
+  var vertices = [];
+  var rng = seededRandom(999);
+
+  for (var j = 0; j <= rows; j++) {
+    for (var i = 0; i <= cols; i++) {
+      var u = i / cols;
+      var v = j / rows;
+      vertices.push({ u: u + (rng() - 0.5) * 0.04, v: v + (rng() - 0.5) * 0.03 });
+    }
+  }
+
+  return { cols: cols, rows: rows, vertices: vertices };
+}
+
+function projectPoint(u, v, width, height) {
+  var horizonY = height * 0.52;
+  var nearY = height * 1.08;
+  var perspective = Math.pow(v, 1.55);
+  var y = horizonY + perspective * (nearY - horizonY);
+  var spread = width * (0.55 + v * 1.45);
+  var x = width * 0.5 + (u - 0.5) * spread;
+  return { x: x, y: y };
+}
+
+function getFeature(u, v) {
+  var strata = 0;
+  if (u < 0.4) {
+    strata = (Math.sin(v * 14 + u * 4) + 1) * 0.5;
+    strata *= (1 - u / 0.4);
+  }
+
+  var plateau = (u > 0.33 && u < 0.67 && v > 0.28 && v < 0.72) ? 1.0 : 0.0;
+
+  var rdx = u - 0.72, rdy = v - 0.42;
+  var rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+  var rings = 0;
+  if (rdist < 0.25) {
+    rings = (1 - rdist / 0.25);
+    rings = rings * rings;
+  }
+
+  var bdx = u - 0.45, bdy = v - 0.80;
+  var bdist = Math.sqrt(bdx * bdx + bdy * bdy);
+  var arcs = bdist < 0.18 ? (1 - bdist / 0.18) : 0;
+
+  var noise = Math.sin(u * 8.3 + v * 6.1) * Math.cos(u * 4.2 - v * 9.7) * 0.5 + 0.5;
+
+  return Math.max(strata * 0.85, plateau * 0.95, rings * 0.9, arcs * 0.8, noise * 0.25);
+}
+
+function drawMesh(ctx, canvas, mesh, time) {
+  var cols = mesh.cols, rows = mesh.rows;
+  var w = canvas.width, h = canvas.height;
+
+  var projected = [];
+  for (var k = 0; k < mesh.vertices.length; k++) {
+    var vert = mesh.vertices[k];
+    projected.push(projectPoint(vert.u, vert.v, w, h));
+  }
+
+  for (var j = 0; j < rows; j++) {
+    for (var i = 0; i < cols; i++) {
+      var i00 = j * (cols + 1) + i;
+      var i10 = j * (cols + 1) + i + 1;
+      var i01 = (j + 1) * (cols + 1) + i;
+      var i11 = (j + 1) * (cols + 1) + i + 1;
+
+      var v00 = projected[i00], v10 = projected[i10];
+      var v01 = projected[i01], v11 = projected[i11];
+
+      var u = (i + 0.5) / cols;
+      var v = (j + 0.5) / rows;
+      var feature = getFeature(u, v);
+
+      var depth = 0.28 + v * 0.72;
+      var shimmer = 0.80 + 0.20 * Math.sin(time * 0.35 + u * 7.5 + v * 5.2);
+
+      var alpha = 0.14 + feature * 0.68;
+      alpha *= depth;
+      alpha *= shimmer;
+      alpha = Math.max(0.10, Math.min(0.94, alpha));
+
+      var color;
+      if (feature > 0.75) {
+        color = 'rgba(224, 160, 48, ' + alpha + ')';
+      } else if (feature > 0.50) {
+        color = 'rgba(210, 146, 34, ' + (alpha * 0.92) + ')';
+      } else if (feature > 0.25) {
+        color = 'rgba(170, 109, 22, ' + (alpha * 0.85) + ')';
+      } else {
+        color = 'rgba(126, 78, 10, ' + (alpha * 0.65) + ')';
+      }
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 0.6 + feature * 0.8;
+      ctx.lineCap = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(v00.x, v00.y);
+      ctx.lineTo(v10.x, v10.y);
+      ctx.lineTo(v01.x, v01.y);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(v10.x, v10.y);
+      ctx.lineTo(v11.x, v11.y);
+      ctx.lineTo(v01.x, v01.y);
+      ctx.stroke();
+    }
+  }
+}
