@@ -373,43 +373,17 @@ button {
   align-items: center;
   padding: var(--space-32) 0 var(--space-20);
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 45%, rgba(111, 67, 10, 0.08), transparent 58%),
-    radial-gradient(ellipse at 50% 100%, rgba(91, 54, 7, 0.06), transparent 48%),
-    #020202;
+  /* Solid dark — no gradient wash. WebGL canvas + CSS overlays handle the glow. */
+  background: #010101;
 }
 
-/* Ambient warm glow behind hero */
+/* Ambient warm glow behind hero — DISABLED: caused visible bright center washout */
 .hero::before {
-  content: '';
-  position: absolute;
-  top: -14%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 640px;
-  height: 460px;
-  background: radial-gradient(ellipse, rgba(196, 129, 31, 0.010) 0%, rgba(126, 78, 10, 0.004) 24%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
+  display: none;
 
-/* Subtle bottom gradient — dissolves the hero animation into the page surface */
+/* Subtle bottom gradient — DISABLED to prevent bright bottom washout */
 .hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 280px;
-  background: linear-gradient(
-    to bottom,
-    rgba(2, 2, 2, 0) 0%,
-    rgba(2, 2, 2, 0.12) 46%,
-    rgba(2, 2, 2, 0.24) 72%,
-    rgba(2, 2, 2, 0.52) 100%
-  );
-  pointer-events: none;
-  z-index: 2;
+  display: none;
 }
 
 /* ── Three.js Canvas (topographic rings) ──────────────────────── */
@@ -421,6 +395,8 @@ button {
   z-index: 3;
   pointer-events: none;
   display: block;
+  /* Safety: guarantee canvas is opaque dark regardless of WebGL state */
+  background: #010101 !important;
 }
 
 /* ── CSS Aurora Layer 1 — primary flowing amber ─────────────────── */

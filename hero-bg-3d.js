@@ -110,7 +110,19 @@
     renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputColorSpace;
     // Force the canvas element CSS background to near-black so the body white
     // does not bleed through when WebGL paints an opaque framebuffer.
-    canvas.style.backgroundColor = 'rgb(2,2,2)';
+    // Use background shorthand to ensure it overrides any inline background property.
+    canvas.style.background = 'rgb(2,2,2)';
+    // Also fill the canvas with dark pixels immediately — this guarantees a dark
+    // background even if the WebGL context takes a moment to render the first frame.
+    (function(){
+      try {
+        var ctx2d = canvas.getContext('2d', { alpha: false });
+        if (ctx2d) {
+          ctx2d.fillStyle = 'rgb(2,2,2)';
+          ctx2d.fillRect(0, 0, canvas.width || size.w, canvas.height || size.h);
+        }
+      } catch(e){}
+    })();
     var glContext = renderer.getContext();
     if (!glContext || glContext.isContextLost()) {
       launchCanvasFallback(canvas, 'webgl-context-lost-at-init');
@@ -159,12 +171,12 @@
           '  float d = length(p - cursor);',
           '  float d2 = length(p - vec2(0.08, 0.04));',
           '  float d3 = length(p - vec2(-0.12, -0.06));',
-          '  // Deep spatial halos — very faint amber presence in space',
-          '  float halo1 = smoothstep(0.55, 0.05, d) * 0.038;',
-          '  float halo2 = smoothstep(0.70, 0.10, d2) * 0.022;',
-          '  float halo3 = smoothstep(0.45, 0.05, d3) * 0.028;',
+          '  // Deep spatial halos — barely perceptible, subconscious depth only',
+          '  float halo1 = smoothstep(0.55, 0.05, d) * 0.009;',
+          '  float halo2 = smoothstep(0.70, 0.10, d2) * 0.005;',
+          '  float halo3 = smoothstep(0.45, 0.05, d3) * 0.007;',
           '  // Upper-center depth swell (horizon feel)',
-          '  float horizon = smoothstep(0.60, 0.10, abs(p.y + 0.15)) * 0.018;',
+          '  float horizon = smoothstep(0.60, 0.10, abs(p.y + 0.15)) * 0.004;',
           '  vec3 black = vec3(0.006, 0.006, 0.005);',
           '  vec3 amber = vec3(0.52, 0.32, 0.08);',
           '  vec3 col = black;',
@@ -379,9 +391,9 @@
         'varying vec2 vUv;',
         'varying float vFeature;',
         'void main(){',
-        // Stronger edge falloff — mesh visually dissolves before full-width edges
-        '  float leftEdge   = smoothstep(0.00, 0.12, vUv.x);',
-        '  float rightEdge  = smoothstep(1.00, 0.88, vUv.x);',
+        // Constrained footprint — mesh contained in center, not edge-to-edge
+        '  float leftEdge   = smoothstep(0.00, 0.22, vUv.x);',
+        '  float rightEdge  = smoothstep(1.00, 0.78, vUv.x);',
         '  float edgeFade   = leftEdge * rightEdge;',
         // Horizon fade — mesh recedes away from viewer (near bottom = denser)
         '  float horizonFade = smoothstep(0.02, 0.22, vUv.y);',
@@ -623,7 +635,7 @@
     requestAnimationFrame(animate);
 
     window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'true-golden-depth-pass-02',
+      version: 'gradient-footprint-fix-02',
       renderer: 'three-webgl',
       terrainWidth: isMobile ? 330 : 430,
       terrainSegments: isMobile ? '74x36' : '132x58',
