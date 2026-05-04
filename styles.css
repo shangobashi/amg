@@ -451,26 +451,26 @@ button {
   background:
     radial-gradient(
       ellipse at 50% 42%,
-      rgba(146, 92, 18, 0.14) 0%,
-      rgba(120, 76, 14, 0.09) 24%,
-      rgba(65, 39, 8, 0.045) 48%,
+      rgba(146, 92, 18, 0.038) 0%,
+      rgba(120, 76, 14, 0.024) 24%,
+      rgba(65, 39, 8, 0.012) 48%,
       transparent 72%
     ),
     radial-gradient(
       ellipse at 50% 72%,
-      rgba(170, 109, 22, 0.10) 0%,
-      rgba(120, 76, 14, 0.06) 30%,
-      rgba(30, 18, 4, 0.035) 58%,
+      rgba(170, 109, 22, 0.028) 0%,
+      rgba(120, 76, 14, 0.016) 30%,
+      rgba(30, 18, 4, 0.009) 58%,
       transparent 78%
     ),
     radial-gradient(
       ellipse at 28% 58%,
-      rgba(120, 76, 14, 0.055) 0%,
+      rgba(120, 76, 14, 0.015) 0%,
       transparent 48%
     ),
     radial-gradient(
       ellipse at 72% 60%,
-      rgba(120, 76, 14, 0.05) 0%,
+      rgba(120, 76, 14, 0.013) 0%,
       transparent 52%
     ),
     linear-gradient(
@@ -492,7 +492,7 @@ button {
   transform: translateX(-50%);
   width: 640px;
   height: 460px;
-  background: radial-gradient(ellipse, rgba(196, 129, 31, 0.010) 0%, rgba(126, 78, 10, 0.004) 24%, transparent 60%);
+  background: radial-gradient(ellipse, rgba(196, 129, 31, 0.003) 0%, rgba(126, 78, 10, 0.001) 24%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -618,102 +618,56 @@ button {
 }
 
 /* ── Spatial Halo — atmospheric amber glow behind hero content ──── */
+/* ── Spatial halo — natural atmospheric amber warmth ─────────── */
 .hero__spatial-halo {
   position: absolute;
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  opacity: 0.95;
-  transform: translateZ(0);
-  mix-blend-mode: screen;
+  transform: none;
+  animation: none;
+  opacity: 1;
+  mix-blend-mode: normal;
 
   background:
     radial-gradient(
-      ellipse 34% 28% at 50% 43%,
-      rgba(224, 160, 48, 0.105) 0%,
-      rgba(178, 112, 26, 0.080) 26%,
-      rgba(112, 68, 18, 0.052) 48%,
-      rgba(48, 30, 10, 0.025) 67%,
+      ellipse 62% 48% at 50% 43%,
+      rgba(108, 65, 18, 0.070) 0%,
+      rgba(84, 50, 14, 0.052) 26%,
+      rgba(50, 31, 10, 0.032) 50%,
+      rgba(18, 12, 5, 0.014) 72%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 44% 38% at 42% 42%,
+      rgba(140, 84, 20, 0.032) 0%,
+      rgba(70, 42, 12, 0.018) 48%,
       transparent 82%
     ),
     radial-gradient(
-      ellipse 52% 44% at 50% 48%,
-      transparent 0%,
-      rgba(196, 129, 31, 0.026) 34%,
-      rgba(146, 92, 18, 0.022) 43%,
-      transparent 58%
+      ellipse 56% 36% at 58% 45%,
+      rgba(126, 76, 18, 0.026) 0%,
+      rgba(56, 34, 10, 0.014) 54%,
+      transparent 86%
     ),
     radial-gradient(
-      ellipse 74% 62% at 50% 47%,
-      rgba(92, 58, 18, 0.034) 0%,
-      rgba(54, 34, 12, 0.020) 46%,
-      transparent 78%
+      ellipse 72% 28% at 50% 66%,
+      rgba(126, 76, 18, 0.030) 0%,
+      rgba(52, 32, 10, 0.016) 48%,
+      transparent 84%
     );
 
-  filter: blur(2px);
-  animation: heroSpatialHaloBreathe 18s ease-in-out infinite;
+  filter: blur(28px);
 }
 
-.hero__spatial-halo::before {
-  content: "";
-  position: absolute;
-  inset: -8%;
-  pointer-events: none;
-  opacity: 0.55;
-  background:
-    radial-gradient(
-      ellipse 42% 34% at 50% 44%,
-      transparent 0%,
-      transparent 48%,
-      rgba(224, 160, 48, 0.018) 52%,
-      transparent 62%
-    ),
-    radial-gradient(
-      ellipse 64% 52% at 50% 46%,
-      transparent 0%,
-      transparent 55%,
-      rgba(146, 92, 18, 0.014) 60%,
-      transparent 72%
-    );
-  filter: blur(6px);
-}
-
+.hero__spatial-halo::before,
 .hero__spatial-halo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      ellipse 48% 38% at 50% 43%,
-      rgba(255, 196, 82, 0.030) 0%,
-      transparent 58%
-    );
-  opacity: 0.42;
-  filter: blur(18px);
-}
-
-@keyframes heroSpatialHaloBreathe {
-  0%, 100% {
-    opacity: 0.88;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.018);
-  }
+  content: none !important;
 }
 
 @media (max-width: 768px) {
   .hero__spatial-halo {
-    opacity: 0.72;
-    background:
-      radial-gradient(
-        ellipse 72% 44% at 50% 42%,
-        rgba(224, 160, 48, 0.060) 0%,
-        rgba(146, 92, 18, 0.034) 42%,
-        transparent 78%
-      );
+    filter: blur(22px);
   }
 }
 
