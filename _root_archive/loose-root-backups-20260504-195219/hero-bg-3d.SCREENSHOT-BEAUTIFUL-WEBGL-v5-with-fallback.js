@@ -119,8 +119,8 @@
     scene.fog = new THREE.FogExp2(0x050504, 0.0105);
 
     var camera = new THREE.PerspectiveCamera(46, size.w / size.h, 0.1, 900);
-    camera.position.set(0, 26, 118);
-    camera.lookAt(0, 2, -44);
+    camera.position.set(0, 18, 118);
+    camera.lookAt(0, -8, -42);
 
     // ────────────────────────────────────────────────────────────────────────
     // Layer 0: deep radial WebGL backdrop, independent from CSS aurora.
@@ -160,12 +160,12 @@
           '  float n = fbm(uv * 3.2 + vec2(uTime * 0.018, -uTime * 0.012));',
           '  float core = smoothstep(0.72, 0.03, d);',
           '  float band = smoothstep(0.95, 0.08, abs((p.y + p.x * 0.18) + sin(uv.x * 2.4 + uTime * 0.05) * 0.025));',
-          '  vec3 black = vec3(0.006,0.006,0.005);',
+          '  vec3 black = vec3(0.012,0.011,0.009);',
           '  vec3 amber = vec3(0.79,0.55,0.20);',
           '  vec3 gold = vec3(0.96,0.72,0.30);',
           '  vec3 col = black;',
-          '  col += amber * core * (0.12 + n * 0.05);',
-          '  col += gold * band * 0.016;',
+          '  col += amber * core * (0.19 + n * 0.08);',
+          '  col += gold * band * 0.025;',
           '  col *= 1.0 - smoothstep(0.42, 1.05, d) * 0.84;',
           '  gl_FragColor = vec4(col, 1.0);',
           '}'
@@ -207,38 +207,25 @@
       vertexShader: [
         'attribute float aSize;',
         'varying vec3 vColor;',
-        'varying float vPulse;',
         'uniform float uTime;',
         'uniform vec2 uMouse;',
         'void main(){',
+        '  vColor = color;',
         '  vec3 p = position;',
-        '  vec2 cursor = vec2(uMouse.x * 118.0, 22.0 + uMouse.y * 44.0);',
-        '  vec2 delta = cursor - p.xy;',
-        '  float dist = length(delta);',
-        '  float attract = smoothstep(96.0, 0.0, dist);',
-        '  vec2 radial = delta / max(dist, 0.001);',
-        '  vec2 tangent = vec2(-radial.y, radial.x);',
-        '  p.xy += radial * attract * (6.5 + aSize * 1.8);',
-        '  p.xy += tangent * attract * (1.8 + aSize * 0.45) * sin(uTime * 0.9 + dist * 0.05);',
-        '  p.z += attract * (4.5 + aSize * 1.4);',
-        '  p.x += sin(uTime * 0.12 + position.z * 0.03) * 0.35;',
-        '  p.y += cos(uTime * 0.10 + position.x * 0.02) * 0.22;',
-        '  vPulse = attract;',
-        '  vColor = mix(color, vec3(1.0, 0.87, 0.52), attract * 0.85);',
+        '  p.x += uMouse.x * (4.0 + aSize * 1.8) + sin(uTime * 0.12 + position.z * 0.03) * 0.8;',
+        '  p.y += uMouse.y * (2.0 + aSize) + cos(uTime * 0.10 + position.x * 0.02) * 0.45;',
         '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
-        '  gl_PointSize = aSize * (210.0 / max(35.0, -mv.z)) * (1.0 + attract * 0.85);',
+        '  gl_PointSize = aSize * (210.0 / max(35.0, -mv.z));',
         '  gl_Position = projectionMatrix * mv;',
         '}'
       ].join('\n'),
       fragmentShader: [
         'precision mediump float;',
         'varying vec3 vColor;',
-        'varying float vPulse;',
         'void main(){',
         '  vec2 d = gl_PointCoord - vec2(0.5);',
         '  float a = 1.0 - smoothstep(0.05, 0.48, length(d));',
-        '  a *= 0.58 + vPulse * 0.62;',
-        '  gl_FragColor = vec4(vColor, a);',
+        '  gl_FragColor = vec4(vColor, a * 0.62);',
         '}'
       ].join('\n')
     });
@@ -275,23 +262,18 @@
         '  vUv = uv;',
         '  vec3 p = position;',
         '  float t = uTime;',
-        '  float baseH = 0.0;',
-        '  baseH += sin(p.x * 0.035) * 5.5;',
-        '  baseH += sin(p.y * 0.055) * 4.0;',
-        '  baseH += sin((p.x + p.y) * 0.026) * 8.0;',
-        '  baseH += bump(p.xy, vec2(-74.0, 22.0), 18.0, 2600.0);',
-        '  baseH += bump(p.xy, vec2(58.0, -8.0), 15.0, 2200.0);',
-        '  baseH -= bump(p.xy, vec2(4.0, 52.0), 12.0, 3400.0);',
-        '  float breath = 0.92 + 0.08 * sin(t * 0.55 + uv.y * 2.4);',
-        '  float ripple = sin((p.x * 0.020 + p.y * 0.016) - t * 0.42) * 0.85 * smoothstep(0.08, 1.0, uv.y);',
-        '  vec2 cursor = vec2(uMouse.x * 95.0, uMouse.y * 32.0 - 8.0);',
-        '  vec2 delta = p.xy - cursor;',
-        '  float dist = length(delta);',
-        '  float cursorLift = smoothstep(72.0, 0.0, dist);',
-        '  float h = baseH * breath + ripple + cursorLift * 4.2;',
+        '  float h = 0.0;',
+        '  h += sin(p.x * 0.035 + t * 0.42) * 5.5;',
+        '  h += sin(p.y * 0.055 - t * 0.31) * 4.0;',
+        '  h += sin((p.x + p.y) * 0.026 + t * 0.22) * 8.0;',
+        '  h += bump(p.xy, vec2(-74.0, 22.0), 18.0, 2600.0);',
+        '  h += bump(p.xy, vec2(58.0, -8.0), 15.0, 2200.0);',
+        '  h -= bump(p.xy, vec2(4.0, 52.0), 12.0, 3400.0);',
         '  float contour = abs(sin(h * 0.44 + t * 0.10));',
-        '  vIntensity = 0.24 + smoothstep(0.48, 1.0, contour) * 0.50 + smoothstep(0.15, 0.82, uv.y) * 0.18 + cursorLift * 0.14;',
+        '  vIntensity = 0.18 + smoothstep(0.52, 1.0, contour) * 0.48 + smoothstep(0.15, 0.82, uv.y) * 0.20;',
         '  p.z += h;',
+        '  p.x += uMouse.x * 4.0 * (0.2 + uv.y);',
+        '  p.z += uMouse.y * 2.5 * (0.2 + uv.y);',
         '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
         '}'
       ].join('\n'),
@@ -312,8 +294,8 @@
     });
     var terrain = new THREE.Mesh(terrainGeo, terrainMat);
     terrain.rotation.x = -Math.PI / 2.55;
-    terrain.position.set(0, -114, -70);
-    terrain.scale.set(1.34, 1.10, 1.0);
+    terrain.position.set(0, -82, -70);
+    terrain.scale.set(1.28, 1.0, 1.0);
     terrain.renderOrder = 1;
     scene.add(terrain);
 
@@ -460,7 +442,7 @@
       backdropUniforms.uAspect.value = size.w / size.h;
       // Make the terrain always overfill the viewport width, including ultra-wide.
       var aspectBoost = Math.max(1.0, (size.w / Math.max(1, size.h)) / 1.65);
-      terrain.scale.x = 1.34 * aspectBoost;
+      terrain.scale.x = 1.28 * aspectBoost;
       lattice.scale.copy(terrain.scale);
     }
 
@@ -486,11 +468,11 @@
       starMat.uniforms.uTime.value = t;
       starMat.uniforms.uMouse.value.copy(dampedMouse);
 
-      terrain.rotation.z = Math.sin(t * 0.055) * 0.004;
+      terrain.rotation.z = Math.sin(t * 0.055) * 0.012 + dampedMouse.x * 0.010;
       lattice.rotation.copy(terrain.rotation);
 
-      stars.rotation.y = Math.sin(t * 0.025) * 0.004;
-      stars.rotation.x = 0.0;
+      stars.rotation.y = dampedMouse.x * 0.018 + Math.sin(t * 0.025) * 0.006;
+      stars.rotation.x = dampedMouse.y * 0.010;
 
       for (var i = 0; i < crystals.length; i++) {
         var c = crystals[i];
@@ -518,10 +500,15 @@
         au.ring.rotation.z += 0.0035 + j * 0.0008;
       }
 
-      camera.position.x = 0;
-      camera.position.y = 26;
-      camera.lookAt(0, 2, -44);
+      camera.position.x = dampedMouse.x * 3.5;
+      camera.position.y = 18 + dampedMouse.y * 1.8;
+      camera.lookAt(dampedMouse.x * 2.0, -9 + dampedMouse.y * 1.2, -44);
       renderer.render(scene, camera);
+      var liveGl = renderer.getContext();
+      if (t > 0.35 && (!liveGl || liveGl.isContextLost() || liveGl.drawingBufferWidth === 0 || liveGl.drawingBufferHeight === 0)) {
+        launchCanvasFallback(canvas, 'webgl-zero-drawing-buffer');
+        return;
+      }
       requestAnimationFrame(animate);
     }
     requestAnimationFrame(animate);
