@@ -79,7 +79,6 @@
   var starTex = new THREE.CanvasTexture(sc);
   starTex.magFilter = THREE.NearestFilter;
   starTex.minFilter = THREE.NearestFilter;
-  var count = isMobile ? 700 : 1500;
   var sGeo = new THREE.BufferGeometry();
   var sPos = new Float32Array(count * 3), sUV = new Float32Array(count * 2);
   for (var i = 0; i < count; i++) {
@@ -129,8 +128,9 @@
   ' h += iF*(sl*1.8+sc2*0.9-1.0);',
   ' vH = h; pos.z += h * 2.5;',
   ' gl_Position = projectionMatrix * modelViewMatrix * vec4(pos,1.0);',
-  '}',
- ].join('\n');
+  '}'
+ ].join('
+');
  var topoFrag = [
   'varying float vH; varying vec2 vUv; uniform float uTime;',
   'void main(){',
@@ -139,8 +139,9 @@
   ' float cont = sin(vH*3.8)*0.5+0.5; cont = smoothstep(0.35,0.65,cont);',
   ' float alpha = mix(0.38,0.92,cont*hv);',
   ' gl_FragColor = vec4(mix(bc,lc,cont*0.85),alpha);',
-  '}',
- ].join('\n');
+  '}'
+ ].join('
+');
  var topoMat = new THREE.ShaderMaterial({
   vertexShader: topoVert, fragmentShader: topoFrag,
   uniforms: tUni, wireframe: true, transparent: true, depthWrite: false
