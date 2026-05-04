@@ -227,7 +227,7 @@ button {
 .nav__brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 14px;
   min-width: 0;
   text-decoration: none;
 }
