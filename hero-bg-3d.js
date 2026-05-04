@@ -99,7 +99,8 @@
         alpha: false,
         antialias: !isMobile,
         powerPreference: 'high-performance',
-        preserveDrawingBuffer: false
+        // Keep buffer so the dark clear color stays between frames.
+        preserveDrawingBuffer: true
       });
     } catch (err) {
       launchCanvasFallback(canvas, 'webgl-constructor-failed');
@@ -113,17 +114,6 @@
     // Force canvas element to near-black CSS background so the body white
     // does not bleed through when WebGL paints its opaque framebuffer.
     canvas.style.background = 'rgb(2,2,2)';
-    // Also fill the canvas with dark pixels immediately — this guarantees a dark
-    // background even if the WebGL context takes a moment to render the first frame.
-    (function () {
-      try {
-        var ctx2d = canvas.getContext('2d', { alpha: false });
-        if (ctx2d) {
-          ctx2d.fillStyle = 'rgb(2,2,2)';
-          ctx2d.fillRect(0, 0, canvas.width, canvas.height);
-        }
-      } catch (e) { /* ignore */ }
-    })();
 
     var glContext = renderer.getContext();
     if (!glContext || glContext.isContextLost()) {

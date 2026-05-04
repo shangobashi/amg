@@ -375,7 +375,7 @@ button {
   align-items: center;
   padding: var(--space-32) 0 var(--space-20);
   overflow: hidden;
-  background: #010101;
+  background: rgb(2,2,2);
 }
 
 /* Ambient warm glow behind hero */
@@ -421,7 +421,7 @@ button {
   pointer-events: none;
   display: block;
   /* Safety: guarantee canvas is opaque dark regardless of WebGL state */
-  background: #010101 !important;
+  background: rgb(2,2,2) !important;
 }
 
 /* ── CSS Aurora Layer 1 — primary flowing amber ─────────────────── */
