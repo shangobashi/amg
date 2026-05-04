@@ -373,19 +373,41 @@ button {
   align-items: center;
   padding: var(--space-32) 0 var(--space-20);
   overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 50% 44%,
+      rgba(126, 78, 10, 0.040) 0%,
+      rgba(84, 50, 8, 0.025) 24%,
+      rgba(20, 12, 3, 0.014) 42%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse at 50% 86%,
+      rgba(112, 70, 12, 0.028) 0%,
+      rgba(28, 17, 5, 0.018) 36%,
+      transparent 68%
+    ),
+    linear-gradient(
+      180deg,
+      #020202 0%,
+      #030302 40%,
+      #030201 68%,
+      #010101 100%
+    ) !important;
 }
 
 /* Ambient warm glow behind hero */
 .hero::before {
   content: '';
   position: absolute;
-  top: -20%;
+  top: -14%;
   left: 50%;
   transform: translateX(-50%);
-  width: 800px;
-  height: 600px;
-  background: radial-gradient(ellipse, rgba(201, 164, 84, 0.06) 0%, transparent 70%);
+  width: 640px;
+  height: 460px;
+  background: radial-gradient(ellipse, rgba(196, 129, 31, 0.010) 0%, rgba(126, 78, 10, 0.004) 24%, transparent 60%);
   pointer-events: none;
+  z-index: 0;
 }
 
 /* Subtle bottom gradient — dissolves the hero animation into the page surface */
@@ -398,10 +420,10 @@ button {
   height: 280px;
   background: linear-gradient(
     to bottom,
-    rgba(12, 12, 10, 0) 0%,
-    rgba(12, 12, 10, 0.45) 45%,
-    rgba(12, 12, 10, 0.88) 70%,
-    var(--surface-void) 100%
+    rgba(2, 2, 2, 0) 0%,
+    rgba(2, 2, 2, 0.12) 46%,
+    rgba(2, 2, 2, 0.24) 72%,
+    rgba(2, 2, 2, 0.52) 100%
   );
   pointer-events: none;
   z-index: 2;
@@ -429,7 +451,9 @@ button {
     radial-gradient(ellipse 60% 80% at 70% 30%, rgba(201, 164, 84, 0.09) 0%, transparent 55%),
     radial-gradient(ellipse 100% 40% at 50% 80%, rgba(245, 158, 11, 0.07) 0%, transparent 50%);
   animation: aurora-drift-1 18s ease-in-out infinite alternate;
-  opacity: 1;
+  opacity: 0.12 !important;
+  mix-blend-mode: screen;
+  display: none !important;
 }
 
 /* ── CSS Aurora Layer 2 — secondary glow ──────────────────────── */
@@ -442,7 +466,9 @@ button {
     radial-gradient(ellipse 50% 70% at 65% 60%, rgba(217, 119, 6, 0.11) 0%, transparent 60%),
     radial-gradient(ellipse 70% 50% at 25% 40%, rgba(201, 164, 84, 0.08) 0%, transparent 50%);
   animation: aurora-drift-2 24s ease-in-out infinite alternate;
-  opacity: 1;
+  opacity: 0.12 !important;
+  mix-blend-mode: screen;
+  display: none !important;
 }
 
 /* ── Particle twinkle field ───────────────────────────────────── */
@@ -556,7 +582,7 @@ button {
   z-index: -1;
   pointer-events: none;
   border-radius: 999px;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.38) 38%, rgba(0,0,0,0.14) 68%, transparent 100%);
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0.38) 36%, rgba(0,0,0,0.14) 66%, transparent 100%);
   filter: blur(22px);
 }
 
