@@ -2315,3 +2315,71 @@ button {
     font-size: 0.75rem !important;
   }
 }
+
+/* === AFRIPLAN HERO MICROFIX: content must stay above WebGL === */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+#heroBgCanvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 3 !important;
+  pointer-events: none !important;
+  display: block !important;
+  background: rgb(2, 2, 2) !important;
+}
+
+.hero canvas:not(#heroBgCanvas) {
+  pointer-events: none !important;
+}
+
+.hero__content,
+.hero .hero__content {
+  position: relative !important;
+  z-index: 30 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  pointer-events: auto !important;
+  isolation: isolate;
+}
+
+.hero__content *,
+.hero__actions,
+.hero__actions *,
+.hero__trust,
+.hero__trust * {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero__actions,
+.hero .hero__actions {
+  position: relative !important;
+  z-index: 40 !important;
+  pointer-events: auto !important;
+}
+
+.hero__actions a,
+.hero__actions button {
+  position: relative !important;
+  z-index: 41 !important;
+  pointer-events: auto !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.58),
+    0 0 18px rgba(170, 109, 22, 0.16);
+}
+
+.site-header,
+.header,
+.navbar,
+nav {
+  position: relative;
+  z-index: 60;
+}

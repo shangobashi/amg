@@ -99,13 +99,13 @@
         alpha: false,
         antialias: !isMobile,
         powerPreference: 'high-performance',
-        preserveDrawingBuffer: true
+        preserveDrawingBuffer: false
       });
     } catch (err) {
       launchCanvasFallback(canvas, 'webgl-constructor-failed');
       return;
     }
-    renderer.setClearColor(0x050504, 1);
+    renderer.setClearColor(0x020202, 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
     renderer.setSize(size.w, size.h, false);
     renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputColorSpace;
@@ -116,7 +116,7 @@
     }
 
     var scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x050504, 0.0105);
+    scene.fog = new THREE.FogExp2(0x020202, 0.0085);
 
     var camera = new THREE.PerspectiveCamera(46, size.w / size.h, 0.1, 900);
     camera.position.set(0, 26, 118);
@@ -173,7 +173,10 @@
       })
     );
     backdrop.renderOrder = -100;
-    scene.add(backdrop);
+    // Do NOT add to scene — backdrop is a full-frame quad that paints bright
+    // amber/gold at full opacity, washing out hero text. The fog still affects
+    // 3D objects (terrain, stars, crystals) without an opaque background plane.
+    // scene.add(backdrop);
 
     // ────────────────────────────────────────────────────────────────────────
     // Layer 1: depth-varied starfield. Moderate; expensive, not noisy.
@@ -188,10 +191,10 @@
       starPos[i3] = (Math.random() - 0.5) * 260;
       starPos[i3 + 1] = -4 + Math.random() * 92;
       starPos[i3 + 2] = -180 + Math.random() * 170;
-      var warm = 0.65 + Math.random() * 0.35;
-      starCol[i3] = 0.72 + warm * 0.28;
-      starCol[i3 + 1] = 0.50 + warm * 0.30;
-      starCol[i3 + 2] = 0.20 + warm * 0.18;
+      var warm = 0.50 + Math.random() * 0.30;
+      starCol[i3] = 0.42 + warm * 0.28;
+      starCol[i3 + 1] = 0.24 + warm * 0.22;
+      starCol[i3 + 2] = 0.05 + warm * 0.10;
       starSize[i] = 0.55 + Math.pow(depth, 2.0) * (isMobile ? 1.2 : 2.5);
     }
     var starGeo = new THREE.BufferGeometry();
@@ -201,7 +204,7 @@
     var starMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       vertexColors: true,
       uniforms: { uTime: { value: 0 }, uMouse: { value: new THREE.Vector2() } },
       vertexShader: [
@@ -224,9 +227,9 @@
         '  p.x += sin(uTime * 0.12 + position.z * 0.03) * 0.35;',
         '  p.y += cos(uTime * 0.10 + position.x * 0.02) * 0.22;',
         '  vPulse = attract;',
-        '  vColor = mix(color, vec3(1.0, 0.87, 0.52), attract * 0.85);',
+        '  vColor = mix(color, vec3(0.66, 0.42, 0.12), attract * 0.55);',
         '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
-        '  gl_PointSize = aSize * (210.0 / max(35.0, -mv.z)) * (1.0 + attract * 0.85);',
+        '  gl_PointSize = aSize * (210.0 / max(35.0, -mv.z)) * (1.0 + attract * 0.65);',
         '  gl_Position = projectionMatrix * mv;',
         '}'
       ].join('\n'),
@@ -237,7 +240,7 @@
         'void main(){',
         '  vec2 d = gl_PointCoord - vec2(0.5);',
         '  float a = 1.0 - smoothstep(0.05, 0.48, length(d));',
-        '  a *= 0.58 + vPulse * 0.62;',
+        '  a *= (0.32 + vPulse * 0.36);',
         '  gl_FragColor = vec4(vColor, a);',
         '}'
       ].join('\n')
@@ -260,7 +263,7 @@
       depthWrite: false,
       side: THREE.DoubleSide,
       wireframe: true,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       uniforms: terrainUniforms,
       vertexShader: [
         'uniform float uTime;',
@@ -302,10 +305,10 @@
         'void main(){',
         '  float edgeFade = smoothstep(0.00, 0.10, vUv.x) * smoothstep(1.00, 0.90, vUv.x);',
         '  float horizonFade = smoothstep(0.03, 0.20, vUv.y);',
-        '  vec3 gold = vec3(0.82, 0.62, 0.25);',
-        '  vec3 bright = vec3(1.00, 0.78, 0.34);',
+        '  vec3 gold = vec3(0.48, 0.30, 0.06);',
+        '  vec3 bright = vec3(0.66, 0.42, 0.09);',
         '  vec3 col = mix(gold, bright, vIntensity);',
-        '  float alpha = (0.18 + vIntensity * 0.55) * edgeFade * horizonFade;',
+        '  float alpha = (0.11 + vIntensity * 0.34) * edgeFade * horizonFade * 0.62;',
         '  gl_FragColor = vec4(col, alpha);',
         '}'
       ].join('\n')
@@ -321,13 +324,13 @@
     var lattice = new THREE.Points(
       terrainGeo.clone(),
       new THREE.PointsMaterial({
-        color: 0xe8c878,
+        color: 0x925c12,
         size: isMobile ? 0.34 : 0.46,
         transparent: true,
-        opacity: 0.24,
+        opacity: 0.15,
         depthWrite: false,
         sizeAttenuation: true,
-        blending: THREE.AdditiveBlending
+        blending: THREE.NormalBlending
       })
     );
     lattice.rotation.copy(terrain.rotation);
@@ -340,27 +343,27 @@
     // Layer 3: floating wireframe polyhedrons with planet-like rings/moons.
     // ────────────────────────────────────────────────────────────────────────
     var crystalMat = new THREE.MeshBasicMaterial({
-      color: 0xc9a454,
+      color: 0x784c0e,
       wireframe: true,
       transparent: true,
-      opacity: 0.34,
+      opacity: 0.21,
       depthWrite: false,
-      blending: THREE.AdditiveBlending
+      blending: THREE.NormalBlending
     });
     var ringMat = new THREE.MeshBasicMaterial({
-      color: 0xe8c878,
+      color: 0x925c12,
       transparent: true,
-      opacity: 0.58,
+      opacity: 0.36,
       side: THREE.DoubleSide,
       depthWrite: false,
-      blending: THREE.AdditiveBlending
+      blending: THREE.NormalBlending
     });
     var moonMat = new THREE.MeshBasicMaterial({
-      color: 0xffe5a8,
+      color: 0xAA6D16,
       transparent: true,
-      opacity: 0.92,
+      opacity: 0.57,
       depthWrite: false,
-      blending: THREE.AdditiveBlending
+      blending: THREE.NormalBlending
     });
 
     function addCrystal(def) {
@@ -423,15 +426,15 @@
       g.userData = { baseY: y, phase: phase };
       var core = new THREE.Mesh(
         new THREE.SphereGeometry(radius, 24, 24),
-        new THREE.MeshBasicMaterial({ color: 0xf5b642, transparent: true, opacity: 0.62, depthWrite: false, blending: THREE.AdditiveBlending })
+        new THREE.MeshBasicMaterial({ color: 0xC4811F, transparent: true, opacity: 0.38, depthWrite: false, blending: THREE.NormalBlending })
       );
       var halo = new THREE.Mesh(
         new THREE.SphereGeometry(radius * 2.6, 24, 24),
-        new THREE.MeshBasicMaterial({ color: 0xc9a454, transparent: true, opacity: 0.075, depthWrite: false, blending: THREE.AdditiveBlending })
+        new THREE.MeshBasicMaterial({ color: 0x784c0e, transparent: true, opacity: 0.045, depthWrite: false, blending: THREE.NormalBlending })
       );
       var ring = new THREE.Mesh(
         new THREE.TorusGeometry(ringR, 0.055, 5, 80),
-        new THREE.MeshBasicMaterial({ color: 0xe8c878, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
+        new THREE.MeshBasicMaterial({ color: 0x925c12, transparent: true, opacity: 0.14, side: THREE.DoubleSide, depthWrite: false, blending: THREE.NormalBlending })
       );
       ring.rotation.x = Math.PI / 2.9;
       ring.rotation.y = phase * 0.12;
@@ -527,7 +530,7 @@
     requestAnimationFrame(animate);
 
     window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'screenshot-beautiful-webgl-v4-preserve-buffer',
+      version: 'screenshot-beautiful-webgl-microfix-01',
       renderer: 'three-webgl',
       terrainWidth: 430,
       terrainSegments: isMobile ? '74x36' : '132x58',
