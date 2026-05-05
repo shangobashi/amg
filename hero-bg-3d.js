@@ -285,7 +285,63 @@
       uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2() }
     };
-    var terrainGeo = new THREE.PlaneGeometry(430, 210, isMobile ? 74 : 132, isMobile ? 36 : 58);
+    function createGoldenTerrainGeometry() {
+      var cols = isMobile ? 74 : 132;
+      var rows = isMobile ? 36 : 58;
+      var terrainW = 430;
+      var terrainH = 210;
+      var verts = [];
+      var uvs = [];
+      var indices = [];
+
+      function ss(a, b, x) {
+        var t = Math.max(0, Math.min(1, (x - a) / Math.max(0.0001, b - a)));
+        return t * t * (3 - 2 * t);
+      }
+      function mix(a, b, t) { return a + (b - a) * t; }
+
+      for (var j = 0; j <= rows; j++) {
+        var v = j / rows;
+        var baseWidth = mix(0.58, 0.78, ss(0.05, 0.42, v));
+        baseWidth = mix(baseWidth, 0.50, ss(0.62, 1.0, v));
+        var leftNoise = 0.035 * Math.sin(v * 8.0 + 1.7) + 0.020 * Math.sin(v * 21.0);
+        var rightNoise = 0.040 * Math.sin(v * 7.0 + 3.4) + 0.018 * Math.sin(v * 19.0);
+        var leftBound = -baseWidth + leftNoise;
+        var rightBound = baseWidth + rightNoise;
+
+        for (var i = 0; i <= cols; i++) {
+          var u = i / cols;
+          var xNorm = mix(leftBound, rightBound, u);
+          var x = xNorm * terrainW * 0.5;
+          var y = (v - 0.5) * terrainH;
+          verts.push(x, y, 0);
+          uvs.push(u, v);
+        }
+      }
+
+      // Intentionally omit the first and last depth strips so the terrain has
+      // no full-width front or horizon border. The footprint is actual mesh topology,
+      // not a fragment-shader mask.
+      for (var row = 1; row < rows - 1; row++) {
+        for (var col = 0; col < cols; col++) {
+          var a = row * (cols + 1) + col;
+          var b = a + 1;
+          var c = (row + 1) * (cols + 1) + col;
+          var d = c + 1;
+          indices.push(a, c, b);
+          indices.push(b, c, d);
+        }
+      }
+
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geo.setIndex(indices);
+      geo.computeBoundingSphere();
+      return geo;
+    }
+
+    var terrainGeo = createGoldenTerrainGeometry();
     var terrainMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
@@ -584,12 +640,14 @@
     requestAnimationFrame(animate);
 
     window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'ios-safari-fix-01',
+      version: 'webgl-mesh-shape-01',
       renderer: 'three-webgl',
       iOSSafe: true,
       terrainWidth: 430,
-      terrainSegments: isMobile ? '74x36' : '132x58',
-      fullWidthMesh: true,
+      terrainSegments: isMobile ? '74x36-shaped' : '132x58-shaped',
+      fullWidthMesh: false,
+      shapedGeometry: true,
+      shaderMaskPrimary: false,
       polyhedrons: crystals.length,
       orbitRings: 2,
       starCount: starCount
