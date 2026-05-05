@@ -283,7 +283,8 @@
     // ────────────────────────────────────────────────────────────────────────
     var terrainUniforms = {
       uTime: { value: 0 },
-      uMouse: { value: new THREE.Vector2() }
+      uMouse: { value: new THREE.Vector2() },
+      version: 'webgl-mesh-recession-softened-01'
     };
     function createGoldenTerrainGeometry() {
       var cols = isMobile ? 78 : 144;
@@ -365,6 +366,7 @@
         'varying float vCursor;',
         'varying float vActivity;',
         'varying vec2 vUv;',
+        'varying float vFadeNoise;',
         'float bump(vec2 p, vec2 c, float power, float radius){',
         '  float d = distance(p, c);',
         '  return power * exp(-(d*d) / radius);',
@@ -403,6 +405,8 @@
         '  vSecondary = clamp(vSecondary, 0.0, 1.0);',
         '  // Level 1 ghost: everything else — barely visible bronze support lattice',
         '  vActivity = vContour * 0.65 + vCursor * 0.25;',
+        '  // Procedural noise for organic recession dissolution — breaks the uniform fade band',
+        '  vFadeNoise = 0.82 + 0.18 * sin(p.x * 0.35 + p.y * 0.48 + t * 0.06);',
         '  p.z += h;',
         '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
         '}'
@@ -414,9 +418,16 @@
         'varying float vCursor;',
         'varying float vActivity;',
         'varying vec2 vUv;',
+        'varying float vFadeNoise;',
         'void main(){',
         '  float edgeFade = smoothstep(0.00, 0.18, vUv.x) * smoothstep(1.00, 0.82, vUv.x);',
-        '  float tailFade = smoothstep(0.00, 0.34, vUv.y);',
+        '  // Old: smoothstep(0.00, 0.34, vUv.y) faded the mesh from the very start of the tail,',
+        '  // creating an abrupt visible boundary at ~vUv.y=0.34.',
+        '  // New: power-curve dissolution starting at vUv.y=0.38 and extending to vUv.y=1.0.',
+        '  // The mesh stays fully visible through most of its depth, then dissolves into space.',
+        '  // Noise modulation breaks the uniform fade band so it reads as organic, not cut off.',
+        '  float tailFade = pow(1.0 - smoothstep(0.38, 1.0, vUv.y), 1.3) * vFadeNoise;',
+        '  tailFade = clamp(tailFade, 0.0, 1.0);',
         '  float nearFade = 1.0 - smoothstep(0.92, 1.00, vUv.y) * 0.55;',
         '  float horizonFade = smoothstep(0.02, 0.24, vUv.y);',
         '  float fade = edgeFade * tailFade * horizonFade * nearFade;',
