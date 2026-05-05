@@ -481,8 +481,6 @@ const i18n = {
 
       // CONTACT PAGE
       'ct.hero.label': 'Contact',
-      'ct.form.section-header-title': "Let's talk about<br>what you're looking for.",
-      'ct.form.section-subtitle': 'All conversations are confidential. We respond to qualified inquiries within 1\u20132 business days. Please provide enough context about your interest so we can route your message to the right person.',
       'ct.hero.sub': 'Reach out to discuss data room access, offtake agreements, or investment structures. All enquiries are reviewed by our team within 1\u20132 business days.',
       'ct.form.legend': 'Send a Message',
       'ct.form.name': 'Full Name',
@@ -565,10 +563,6 @@ const i18n = {
       'pr.contact.p': 'For privacy-related enquiries, use the contact form on this site or email us directly. All enquiries are treated as confidential.',
       'pr.updates.title': 'Policy Updates',
       'pr.updates.p': 'This policy is reviewed annually. Material changes will be communicated via the contact form email address on file.',
-      // FOOTER (additional)
-      'footer.brand-desc': 'DRC multi-mineral asset. Four critical minerals at varying stages of verification. Lab-confirmed assays, field indications, and responsible sourcing documentation available for qualified offtake and JV partners.',
-      'footer.copyright': '© 2026 Afriplan Global Solution. All rights reserved.',
-
     },
 
     fr: {
@@ -1045,8 +1039,6 @@ const i18n = {
 
       // CONTACT PAGE
       'ct.hero.label': 'Contact',
-      'ct.form.section-header-title': 'Parlons de ce<br>que vous recherchez.',
-      'ct.form.section-subtitle': 'Tous les \u00e9changes sont confidentiels. Nous r\u00e9pondons aux demandes qualifi\u00e9es sous 1 \u00e0 2 jours ouvrables. Merci de fournir suffisamment de contexte sur votre int\u00e9r\u00eat afin que nous puissions orienter votre message vers la bonne personne.',
       'ct.hero.sub': 'Contactez-nous pour discuter d\'un acc\u00e8s \u00e0 la salle de donn\u00e9es, d\'accords d\'achat ou de structures d\'investissement. Toutes les demandes sont examin\u00e9es par notre \u00e9quipe dans un d\u00e9lai de 1 \u00e0 2 jours ouvrables.',
       'ct.form.legend': 'Envoyer un Message',
       'ct.form.name': 'Nom Complet',
@@ -1129,73 +1121,6 @@ const i18n = {
       'pr.contact.p': 'Pour toute demande li\u00e9e \u00e0 la confidentialit\u00e9, utilisez le formulaire de contact de ce site ou contactez-nous par email. Toutes les demandes sont trait\u00e9es comme confidentielles.',
       'pr.updates.title': 'Mises \u00e0 Jour de la Politique',
       'pr.updates.p': 'Cette politique est examin\u00e9e annuellement. Les changements mat\u00e9riels seront communiqu\u00e9s via l\'adresse email du formulaire de contact.',
-
-      // CONTACT FORM — country select options
-      'ct.form.country.option.be': 'Belgique',
-      'ct.form.country.option.ca': 'Canada',
-      'ct.form.country.option.cn': 'Chine',
-      'ct.form.country.option.cd': 'R\u00e9publique D\u00e9mocratique du Congo',
-      'ct.form.country.option.fr': 'France',
-      'ct.form.country.option.de': 'Allemagne',
-      'ct.form.country.option.in': 'Inde',
-      'ct.form.country.option.jp': 'Japon',
-      'ct.form.country.option.nl': 'Pays-Bas',
-      'ct.form.country.option.za': 'Afrique du Sud',
-      'ct.form.country.option.ch': 'Suisse',
-      'ct.form.country.option.tz': 'Tanzanie',
-      'ct.form.country.option.ae': '\u00c9mirats Arabes Unis',
-      'ct.form.country.option.gb': 'Royaume-Uni',
-      'ct.form.country.option.us': '\u00c9tats-Unis',
-      'ct.form.country.option.other': 'Autre',
-
-      // CONTACT FORM — buyer type options
-      'ct.form.buyer-type.option.offtake': 'Partenaire d\'Achat',
-      'ct.form.buyer-type.option.jv': 'Op\u00e9rateur JV',
-      'ct.form.buyer-type.option.strategic': 'Acqu\u00e9reur Stratégique',
-      'ct.form.buyer-type.option.investor': 'Investisseur en Financement de Projet',
-      'ct.form.buyer-type.option.equipment': 'Partenaire \u00c9quipement-en-Production',
-      'ct.form.buyer-type.option.other': 'Autre',
-
-      // CONTACT FORM — mineral select options
-      'ct.form.mineral.option.be': 'B\u00e9ryllium',
-      'ct.form.mineral.option.w': 'Tungst\u00e8ne / Wolframite',
-      'ct.form.mineral.option.au': 'Or',
-      'ct.form.mineral.option.li': 'Lithium',
-      'ct.form.mineral.option.multiple': 'Multiple / Ouvert aux options',
-
-      // CONTACT FORM — intended use options
-      'ct.form.use.option.resale': 'Revente directe',
-      'ct.form.use.option.industrial': 'Transformation industrielle',
-      'ct.form.use.option.refining': 'Raffinage',
-      'ct.form.use.option.stockpiling': 'Stockage strat\u00e9gique',
-      'ct.form.use.option.investment': 'Investissement',
-      'ct.form.use.option.exploratory': 'Exploration',
-
-      // CONTACT FORM — timeline options
-      'ct.form.timeline.option.immediate': 'Imm\u00e9diat (sous 30 jours)',
-      'ct.form.timeline.option.short': 'Court terme (1 \u00e0 3 mois)',
-      'ct.form.timeline.option.medium': 'Moyen terme (3 \u00e0 6 mois)',
-      'ct.form.timeline.option.exploratory': 'Exploratoire (sans d\u00e9lai fix\u00e9)',
-      'ct.form.timeline.option.conditional': 'Conditionnel \u00e0 la due diligence',
-
-      // DATA ROOM FORM — mineral select options
-      'dr.form.mineral.option.be': 'B\u00e9ryllium',
-      'dr.form.mineral.option.w': 'Tungst\u00e8ne / Wolframite',
-      'dr.form.mineral.option.au': 'Or',
-      'dr.form.mineral.option.li': 'Lithium',
-      'dr.form.mineral.option.multiple': 'Multiple / Ouvert aux options',
-
-      // DATA ROOM FORM — engagement type options
-      'dr.form.engagement.option.offtake': 'Partenaire d\'Achat',
-      'dr.form.engagement.option.jv': 'Op\u00e9rateur JV',
-      'dr.form.engagement.option.strategic': 'Acqu\u00e9reur Stratégique',
-      'dr.form.engagement.option.investor': 'Investisseur',
-      'dr.form.engagement.option.other': 'Autre',
-      // FOOTER (additional)
-      'footer.brand-desc': 'Actif polyminéral en RDC. Quatre minéraux critiques à différents stades de vérification. Analyses confirmées en laboratoire, indications terrain et documentation d’approvisionnement responsable disponibles pour les partenaires d’achat et JV qualifiés.',
-      'footer.copyright': '© 2026 Afriplan Global Solution. Tous droits réservés.',
-
-
     }
   },
 
@@ -1206,9 +1131,6 @@ const i18n = {
       if (t[key] !== undefined) {
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
           el.placeholder = t[key];
-        } else if (el.tagName === 'OPTION') {
-          // Translate <option> text content
-          el.textContent = t[key];
         } else if (/<[a-z]/i.test(t[key])) {
           // Translation contains HTML — use innerHTML (e.g. hero title with <em>)
           el.innerHTML = t[key];
