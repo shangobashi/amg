@@ -115,7 +115,15 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
-  overflow-x: hidden;
+  /* clip is better than hidden: it doesn't suppress scroll events */
+  overflow-x: clip;
+}
+
+/* Clip not supported: fall back to hidden */
+@supports not (overflow-x: clip) {
+  body {
+    overflow-x: hidden;
+  }
 }
 
 /* Warm grain texture overlay */
@@ -2146,10 +2154,11 @@ button {
     flex: 1;
   }
 
-  /* nav__controls becomes invisible container at mobile so its padding doesn't
-     push the hamburger button; only its children (lang-toggle, nav__cta) are hidden */
+  /* nav__controls: invisible at mobile (fixed top-row). Children shown in drawer when open. */
   .nav__controls {
-    display: contents;
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   /* Hamburger is a sibling of nav__controls; make it flex and push to right */
@@ -2178,8 +2187,11 @@ button {
     transform: translateY(-6.5px) rotate(-45deg);
   }
 
-  /* When nav is open, nav__controls becomes a column drawer */
+  /* When nav is open, nav__controls becomes a column drawer — reset position/visibility from mobile base */
   .nav--open .nav__controls {
+    position: static !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
     display: flex !important;
     flex-direction: column;
     order: 3;
@@ -2266,8 +2278,11 @@ button {
   /* ── HERO MOBILE ──────────────────────────────────────────────────────────── */
 
   .hero {
-    /* Use min() to ensure at least 720px on all phones while svh handles address bar */
-    min-height: min(760px, 100svh) !important;
+    /* 100svh handles iOS Safari address bar; -webkit-fill-available is the
+       iOS-specific fallback. Together they give stable hero height on all iPhones. */
+    min-height: 100svh;
+    min-height: -webkit-fill-available;
+    height: auto;
     padding: calc(var(--space-16) + 60px) 0 var(--space-12);
   }
 

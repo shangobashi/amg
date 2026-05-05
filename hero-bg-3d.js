@@ -76,16 +76,26 @@
     var THREE = window.THREE;
     var hero = document.querySelector('.hero') || canvas.parentElement || document.body;
     var isDestroyed = false;
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     var clock = new THREE.Clock();
     var size = { w: 1, h: 1 };
     var isMobile = false;
     var mouse = new THREE.Vector2(0, 0);
     var dampedMouse = new THREE.Vector2(0, 0);
 
+    // iOS-safe viewport reading: use visualViewport when available
     function readSize() {
       var r = hero.getBoundingClientRect();
-      size.w = Math.max(320, Math.round(r.width || window.innerWidth));
-      size.h = Math.max(520, Math.round(r.height || window.innerHeight * 0.92));
+      var vv = window.visualViewport;
+      if (vv) {
+        // visualViewport gives the actual visible area (excludes address bar)
+        size.w = Math.max(320, Math.round(r.width || vv.width));
+        size.h = Math.max(520, Math.round(r.height || vv.height));
+      } else {
+        size.w = Math.max(320, Math.round(r.width || window.innerWidth));
+        size.h = Math.max(520, Math.round(r.height || window.innerHeight));
+      }
       isMobile = size.w < 768;
     }
 
@@ -93,12 +103,19 @@
 
     // Opaque WebGL canvas. No alpha trap, no transparent black failure.
     var renderer;
+    var glContext;
+
+    // iOS conservative renderer settings
+    var iosPixelRatio = Math.min(window.devicePixelRatio || 1, isIOS ? 2 : 2);
+    var iosAntialias = !isMobile && !isIOS; // disable on iOS for stability
+    var iosPower = isIOS ? 'default' : 'high-performance';
+
     try {
       renderer = new THREE.WebGLRenderer({
         canvas: canvas,
         alpha: false,
-        antialias: !isMobile,
-        powerPreference: 'high-performance',
+        antialias: iosAntialias,
+        powerPreference: iosPower,
         // Keep buffer so the dark clear color stays between frames.
         preserveDrawingBuffer: true
       });
@@ -107,19 +124,24 @@
       return;
     }
     renderer.setClearColor(0x020201, 1);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
-    renderer.setSize(size.w, size.h, false);
+    renderer.setPixelRatio(iosPixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputColorSpace;
 
     // Force canvas element to near-black CSS background so the body white
     // does not bleed through when WebGL paints its opaque framebuffer.
     canvas.style.background = 'rgb(2,2,1)';
 
-    var glContext = renderer.getContext();
+    glContext = renderer.getContext();
     if (!glContext || glContext.isContextLost()) {
       launchCanvasFallback(canvas, 'webgl-context-lost-at-init');
       return;
     }
+
+    // iOS context loss recovery
+    canvas.addEventListener('webglcontextlost', function (event) {
+      event.preventDefault();
+      launchCanvasFallback(canvas, 'webgl-context-lost');
+    }, false);
 
     var scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x020201, 0.0085);
@@ -464,8 +486,16 @@
       readSize();
       camera.aspect = size.w / size.h;
       camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
+
+      // CRITICAL for iOS: set BOTH drawing buffer size AND CSS dimensions
+      // iOS needs explicit CSS width/height or it may render at wrong size
+      var DPR = Math.min(window.devicePixelRatio || 1, isIOS ? 2 : 2);
+      renderer.setPixelRatio(DPR);
       renderer.setSize(size.w, size.h, false);
+      // Sync CSS dimensions to match drawing buffer (critical for iOS Safari)
+      canvas.style.width = size.w + 'px';
+      canvas.style.height = size.h + 'px';
+
       backdropUniforms.uAspect.value = size.w / size.h;
       // Make the terrain always overfill the viewport width, including ultra-wide.
       var aspectBoost = Math.max(1.0, (size.w / Math.max(1, size.h)) / 1.65);
@@ -474,6 +504,24 @@
     }
 
     window.addEventListener('resize', resize, { passive: true });
+    // iOS orientationchange — resize may not fire on rotation
+    window.addEventListener('orientationchange', function () {
+      setTimeout(resize, 150);
+      setTimeout(resize, 600);
+    }, { passive: true });
+    // visualViewport resize — iOS address bar shows/hides without window.resize
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', function () {
+        setTimeout(resize, 80);
+        setTimeout(resize, 300);
+      }, { passive: true });
+      window.visualViewport.addEventListener('scroll', function () {
+        setTimeout(resize, 80);
+      }, { passive: true });
+    }
+    // iOS reliability: force resize at 250ms and 1000ms after load
+    setTimeout(resize, 250);
+    setTimeout(resize, 1000);
     window.addEventListener('pointermove', function (e) {
       var r = canvas.getBoundingClientRect();
       mouse.x = ((e.clientX - r.left) / Math.max(1, r.width) - 0.5) * 2;
@@ -536,8 +584,9 @@
     requestAnimationFrame(animate);
 
     window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'screenshot-beautiful-webgl-microfix-01',
+      version: 'ios-safari-fix-01',
       renderer: 'three-webgl',
+      iOSSafe: true,
       terrainWidth: 430,
       terrainSegments: isMobile ? '74x36' : '132x58',
       fullWidthMesh: true,
