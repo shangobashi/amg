@@ -1465,6 +1465,16 @@ button {
   .container {
     padding: 0 var(--space-6);
   }
+
+  /* Stats row: 4-col on desktop -> 2-col on tablet */
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Mineral grid: 2-col on tablet */
+  .mineral-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -2136,13 +2146,27 @@ button {
     flex: 1;
   }
 
+  /* nav__controls becomes invisible container at mobile so its padding doesn't
+     push the hamburger button; only its children (lang-toggle, nav__cta) are hidden */
+  .nav__controls {
+    display: contents;
+  }
+
+  /* Hamburger is a sibling of nav__controls; make it flex and push to right */
   .nav__mobile-toggle {
     display: flex !important;
     order: 2;
     margin-left: auto;
+    align-self: center;
   }
 
-  /* Nav open state → X */
+  /* Hide lang-toggle and nav__cta inside nav__controls at mobile */
+  .nav__controls .lang-toggle,
+  .nav__controls .nav__cta {
+    display: none;
+  }
+
+  /* Nav open state → hamburger X animation */
   .nav--open .nav__mobile-toggle span:nth-child(1) {
     transform: translateY(6.5px) rotate(45deg);
   }
@@ -2152,6 +2176,24 @@ button {
   }
   .nav--open .nav__mobile-toggle span:nth-child(3) {
     transform: translateY(-6.5px) rotate(-45deg);
+  }
+
+  /* When nav is open, nav__controls becomes a column drawer */
+  .nav--open .nav__controls {
+    display: flex !important;
+    flex-direction: column;
+    order: 3;
+    width: 100%;
+    padding: var(--space-3) 0 0;
+    border-top: 1px solid var(--border-subtle);
+    margin-top: var(--space-2);
+    gap: var(--space-1);
+  }
+
+  /* Show lang-toggle and nav__cta in the open drawer */
+  .nav--open .nav__controls .lang-toggle,
+  .nav--open .nav__controls .nav__cta {
+    display: flex !important;
   }
 
   /* Drawer: hidden by default */
@@ -2170,10 +2212,22 @@ button {
   }
 
   /* Drawer: shown when open */
-  .nav--open .nav__links,
-  .nav--open .nav__cta,
+  .nav--open .nav__links {
+    display: flex;
+  }
+
+  /* nav__controls (lang-toggle + CTA) shown in drawer */
+  .nav--open .nav__cta {
+    display: flex;
+  }
+
   .nav--open .nav__inner > .lang-toggle {
     display: flex;
+  }
+
+  .nav--open .nav__controls > .lang-toggle,
+  .nav--open .nav__controls > .nav__cta {
+    display: flex !important;
   }
 
   /* Nav links in drawer */
@@ -2202,7 +2256,8 @@ button {
   }
 
   /* Language toggle in drawer */
-  .nav__inner > .lang-toggle {
+  .nav__inner > .lang-toggle,
+  .nav__controls > .lang-toggle {
     flex-direction: row;
     padding-top: var(--space-3);
   }
@@ -2211,8 +2266,18 @@ button {
   /* ── HERO MOBILE ──────────────────────────────────────────────────────────── */
 
   .hero {
-    min-height: 100svh;
+    /* Use min() to ensure at least 720px on all phones while svh handles address bar */
+    min-height: min(760px, 100svh) !important;
     padding: calc(var(--space-16) + 60px) 0 var(--space-12);
+  }
+
+  /* Ensure hero canvas never overflows */
+  .hero-bg-canvas {
+    overflow: hidden;
+  }
+
+  .hero-bg-canvas canvas {
+    min-height: 0 !important;
   }
 
   /* Scale down the aurora CSS layers on mobile */
@@ -2351,6 +2416,10 @@ button {
     margin-bottom: var(--space-4) !important;
   }
 
+  /* iOS zoom prevention: inputs must be >= 16px on mobile */
+  .form-input,
+  .form-select,
+  .form-textarea,
   input[type="text"],
   input[type="email"],
   input[type="tel"],
@@ -2358,8 +2427,10 @@ button {
   select,
   textarea {
     width: 100% !important;
-    padding: 10px var(--space-3) !important;
-    font-size: 0.9375rem !important;
+    max-width: 100% !important;
+    font-size: 16px !important;
+    min-height: 44px;
+    padding: 11px var(--space-3) !important;
   }
 
   textarea {
@@ -2460,12 +2531,23 @@ button {
   /* ── BUTTONS MOBILE ──────────────────────────────────────────────────────── */
 
   .btn {
-    padding: 11px var(--space-5) !important;
+    padding: 12px var(--space-5) !important;
     font-size: 0.9375rem !important;
+    min-height: 44px !important;
   }
 
   .btn--lg {
-    padding: 13px var(--space-6) !important;
+    padding: 14px var(--space-6) !important;
+    min-height: 48px !important;
+  }
+
+  .btn--primary,
+  .btn--secondary {
+    min-height: 46px !important;
+  }
+
+  .btn--sm {
+    min-height: 38px !important;
   }
 
   /* ── TABLE WRAP MOBILE ────────────────────────────────────────────────────── */
