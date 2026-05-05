@@ -285,8 +285,7 @@
       uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2() }
     };
-    // Terrain geometry: same dimensions, shader will sculpt the footprint
-    var terrainGeo = new THREE.PlaneGeometry(430, 210, isMobile ? 76 : 132, isMobile ? 36 : 58);
+    var terrainGeo = new THREE.PlaneGeometry(430, 210, isMobile ? 74 : 132, isMobile ? 36 : 58);
     var terrainMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
@@ -298,7 +297,6 @@
         'uniform float uTime;',
         'uniform vec2 uMouse;',
         'varying float vIntensity;',
-        'varying float vFeature;',
         'varying vec2 vUv;',
         'float bump(vec2 p, vec2 c, float power, float radius){',
         '  float d = distance(p, c);',
@@ -308,37 +306,22 @@
         '  vUv = uv;',
         '  vec3 p = position;',
         '  float t = uTime;',
-
-        // Feature bumps for geological motifs
-        '  float leftStrata    = bump(p.xy, vec2(-82.0, 14.0), 16.0, 2800.0);',
-        '  float rightRings   = bump(p.xy, vec2(72.0, -18.0), 20.0, 2200.0);',
-        '  float centralPlateau = bump(p.xy, vec2(4.0, 32.0), 14.0, 3400.0);',
-        '  float lowerBasin   = bump(p.xy, vec2(18.0, 62.0), 11.0, 1800.0);',
-        '  float lowerRightFan = bump(p.xy, vec2(88.0, 44.0), 9.0, 1200.0);',
-        '  float feature = max(max(leftStrata, rightRings), max(centralPlateau, max(lowerBasin, lowerRightFan)));',
-        '  vFeature = feature;',
-
-        // Base terrain — slower, broader, geological
         '  float baseH = 0.0;',
-        '  baseH += sin(p.x * 0.030) * 6.5;',
-        '  baseH += sin(p.y * 0.048) * 4.5;',
-        '  baseH += sin((p.x + p.y) * 0.022) * 9.0;',
-        '  baseH += leftStrata * 0.7;',
-        '  baseH += rightRings * 0.6;',
-        '  baseH += centralPlateau * 0.8;',
-        '  baseH -= lowerBasin * 0.5;',
-
-        // Oceanic undulation — slow layered waves, no global drift
-        '  float swellA = sin(p.y * 0.65 - t * 0.22 + p.x * 0.18) * 0.045;',
-        '  float swellB = sin(p.x * 0.75 + p.y * 0.38 + t * 0.16) * 0.030;',
-        '  float swellC = sin((feature * 8.0) - t * 0.28) * feature * 0.035;',
+        '  baseH += sin(p.x * 0.035) * 5.5;',
+        '  baseH += sin(p.y * 0.055) * 4.0;',
+        '  baseH += sin((p.x + p.y) * 0.026) * 8.0;',
+        '  baseH += bump(p.xy, vec2(-74.0, 22.0), 18.0, 2600.0);',
+        '  baseH += bump(p.xy, vec2(58.0, -8.0), 15.0, 2200.0);',
+        '  baseH -= bump(p.xy, vec2(4.0, 52.0), 12.0, 3400.0);',
         '  float breath = 0.92 + 0.08 * sin(t * 0.55 + uv.y * 2.4);',
-        '  float h = baseH * breath + swellA + swellB + swellC;',
-
-        // Contour intensity driven by feature + undulation
-        '  float contour = abs(sin(h * 0.38 + t * 0.09));',
-        '  vIntensity = 0.20 + contour * 0.42 + feature * 0.38;',
-
+        '  float ripple = sin((p.x * 0.020 + p.y * 0.016) - t * 0.42) * 0.85 * smoothstep(0.08, 1.0, uv.y);',
+        '  vec2 cursor = vec2(uMouse.x * 95.0, uMouse.y * 32.0 - 8.0);',
+        '  vec2 delta = p.xy - cursor;',
+        '  float dist = length(delta);',
+        '  float cursorLift = smoothstep(72.0, 0.0, dist);',
+        '  float h = baseH * breath + ripple + cursorLift * 4.2;',
+        '  float contour = abs(sin(h * 0.44 + t * 0.10));',
+        '  vIntensity = 0.24 + smoothstep(0.48, 1.0, contour) * 0.50 + smoothstep(0.15, 0.82, uv.y) * 0.18 + cursorLift * 0.14;',
         '  p.z += h;',
         '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
         '}'
@@ -346,44 +329,14 @@
       fragmentShader: [
         'precision mediump float;',
         'varying float vIntensity;',
-        'varying float vFeature;',
         'varying vec2 vUv;',
         'void main(){',
-
-        // Footprint: narrower in front, wider in back, organic edges via UV harmonics
-        '  float depth = vUv.y;',
-        '  float x = vUv.x;',
-        '  float wNear = 0.40;',
-        '  float wMid  = 0.72;',
-        '  float wFar  = 0.64;',
-        '  float widthByDepth = mix(wNear, wMid, smoothstep(0.08, 0.55, depth));',
-        '  widthByDepth = mix(widthByDepth, wFar, smoothstep(0.62, 1.0, depth));',
-        '  float xCentered = abs(x - 0.5) * 2.0;',
-        '  float organicEdge = 0.045 * sin(depth * 9.28) + 0.025 * sin(depth * 21.0 + x * 2.8);',
-        '  float footprint = 1.0 - smoothstep(widthByDepth + organicEdge,',
-        '                                     widthByDepth + organicEdge + 0.10,',
-        '                                     xCentered);',
-
-        // Edge fades
-        '  float edgeFadeX = smoothstep(0.00, 0.12, x) * smoothstep(1.00, 0.88, x);',
-        '  float edgeFadeY = smoothstep(0.00, 0.08, depth) * smoothstep(1.00, 0.78, depth);',
-
-        // Three-tier geological color hierarchy
-        '  vec3 baseBronze  = vec3(0.22, 0.14, 0.04);',
-        '  vec3 midAmber    = vec3(0.50, 0.32, 0.09);',
-        '  vec3 goldContour = vec3(0.72, 0.50, 0.16);',
-        '  vec3 brightGold  = vec3(0.84, 0.62, 0.22);',
-
-        '  float colorInput = clamp(vIntensity + vFeature * 0.45, 0.0, 1.0);',
-        '  vec3 col = baseBronze;',
-        '  col = mix(col, midAmber, smoothstep(0.20, 0.42, colorInput));',
-        '  col = mix(col, goldContour, smoothstep(0.42, 0.66, colorInput));',
-        '  col = mix(col, brightGold, smoothstep(0.76, 1.00, colorInput));',
-
-        '  float baseAlpha = 0.14 + vIntensity * 0.52;',
-        '  float alpha = baseAlpha * footprint * edgeFadeX * edgeFadeY;',
-        '  alpha = clamp(alpha, 0.0, 0.96);',
-
+        '  float edgeFade = smoothstep(0.00, 0.10, vUv.x) * smoothstep(1.00, 0.90, vUv.x);',
+        '  float horizonFade = smoothstep(0.03, 0.20, vUv.y);',
+        '  vec3 gold = vec3(0.48, 0.30, 0.06);',
+        '  vec3 bright = vec3(0.66, 0.42, 0.09);',
+        '  vec3 col = mix(gold, bright, vIntensity);',
+        '  float alpha = (0.11 + vIntensity * 0.34) * edgeFade * horizonFade * 0.62;',
         '  gl_FragColor = vec4(col, alpha);',
         '}'
       ].join('\n')
@@ -395,14 +348,14 @@
     terrain.renderOrder = 1;
     scene.add(terrain);
 
-    // Point lattice — subtle dark bronze mineral sparkle, muted
+    // A subtle point lattice on the same field gives the screenshot its mineral-map sparkle.
     var lattice = new THREE.Points(
       terrainGeo.clone(),
       new THREE.PointsMaterial({
-        color: 0x3a2408,
+        color: 0x925c12,
         size: isMobile ? 0.34 : 0.46,
         transparent: true,
-        opacity: 0.10,
+        opacity: 0.15,
         depthWrite: false,
         sizeAttenuation: true,
         blending: THREE.NormalBlending
@@ -631,15 +584,12 @@
     requestAnimationFrame(animate);
 
     window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'webgl-mesh-reconstruction-01',
+      version: 'ios-safari-fix-01',
       renderer: 'three-webgl',
       iOSSafe: true,
       terrainWidth: 430,
-      terrainSegments: isMobile ? '76x36' : '132x58',
-      fullWidthMesh: false,
-      sculptedFootprint: true,
-      bronzeColorHierarchy: true,
-      oceanUndulation: true,
+      terrainSegments: isMobile ? '74x36' : '132x58',
+      fullWidthMesh: true,
       polyhedrons: crystals.length,
       orbitRings: 2,
       starCount: starCount
