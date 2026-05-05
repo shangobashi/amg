@@ -2678,6 +2678,62 @@ button {
     width: 32px !important;
     height: 32px !important;
   }
+
+  /* ── RESPONSIBLE SOURCING — targeted overflow protection ──────────────────── */
+
+  /* Checklist items: prevent icon+text from overflowing */
+  .checklist__item {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .checklist__item span,
+  .checklist__item p {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Long document-label spans in traceability section */
+  .section span[style],
+  .section [style*="font-size"] {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  /* CTA band: ensure sub-text wraps */
+  .cta-band__sub {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+  }
+
+  /* Policy card content: ensure no overflow */
+  .policy-card__body {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .policy-card__body p,
+  .policy-card__body li {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  /* ── NAV DRAWER SPACING POLISH ──────────────────────────────────────────── */
+
+  /* More breathing room between lang-toggle and CTA in open drawer */
+  .nav--open .nav__controls > .lang-toggle {
+    padding-bottom: 14px;
+  }
+
+  .nav--open .nav__controls > .nav__cta {
+    padding-top: 10px;
+  }
 }
 
 
