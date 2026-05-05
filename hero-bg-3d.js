@@ -298,14 +298,8 @@
         'uniform float uTime;',
         'uniform vec2 uMouse;',
         'varying float vIntensity;',
-        'varying float vDepth;',
         'varying float vFeature;',
         'varying vec2 vUv;',
-        'float hash(float n){ return fract(sin(n) * 43758.5453123); }',
-        'float noise1d(float p){',
-        '  float i = floor(p); float f = fract(p);',
-        '  return mix(hash(i), hash(i+1.0), f*f*(3.0-2.0*f));',
-        '}',
         'float bump(vec2 p, vec2 c, float power, float radius){',
         '  float d = distance(p, c);',
         '  return power * exp(-(d*d) / radius);',
@@ -315,31 +309,16 @@
         '  vec3 p = position;',
         '  float t = uTime;',
 
-        // Footprint mask: narrower in front, wider in back, organic edges
-        '  float depth = uv.y;',
-        '  float x = uv.x * 2.0 - 1.0;',
-        '  float wNear = 0.40;',
-        '  float wMid  = 0.72;',
-        '  float wFar  = 0.64;',
-        '  float widthByDepth = mix(wNear, wMid, smoothstep(0.08, 0.55, depth));',
-        '  widthByDepth = mix(widthByDepth, wFar, smoothstep(0.62, 1.0, depth));',
-        '  float organicEdge = 0.045 * sin(depth * 9.0 + sin(depth * 3.0) * 1.5)',
-        '                    + 0.025 * sin(depth * 21.0 + x * 2.0);',
-        '  float footprint = 1.0 - smoothstep(widthByDepth + organicEdge,',
-        '                                     widthByDepth + organicEdge + 0.10,',
-        '                                     abs(x));',
-        '  vDepth = depth * footprint;',
-
-        // Feature bumps for geological motifs (relative to pre-rotated plane XY)
-        '  float leftStrata  = bump(p.xy, vec2(-82.0, 14.0), 16.0, 2800.0);',
-        '  float rightRings  = bump(p.xy, vec2(72.0, -18.0), 20.0, 2200.0);',
+        // Feature bumps for geological motifs
+        '  float leftStrata    = bump(p.xy, vec2(-82.0, 14.0), 16.0, 2800.0);',
+        '  float rightRings   = bump(p.xy, vec2(72.0, -18.0), 20.0, 2200.0);',
         '  float centralPlateau = bump(p.xy, vec2(4.0, 32.0), 14.0, 3400.0);',
-        '  float lowerBasin  = bump(p.xy, vec2(18.0, 62.0), 11.0, 1800.0);',
+        '  float lowerBasin   = bump(p.xy, vec2(18.0, 62.0), 11.0, 1800.0);',
         '  float lowerRightFan = bump(p.xy, vec2(88.0, 44.0), 9.0, 1200.0);',
         '  float feature = max(max(leftStrata, rightRings), max(centralPlateau, max(lowerBasin, lowerRightFan)));',
         '  vFeature = feature;',
 
-        // Base terrain undulation — slower, broader, geological
+        // Base terrain — slower, broader, geological
         '  float baseH = 0.0;',
         '  baseH += sin(p.x * 0.030) * 6.5;',
         '  baseH += sin(p.y * 0.048) * 4.5;',
@@ -367,42 +346,40 @@
       fragmentShader: [
         'precision mediump float;',
         'varying float vIntensity;',
-        'varying float vDepth;',
         'varying float vFeature;',
         'varying vec2 vUv;',
         'void main(){',
-        // Footprint alpha — smooth horizontal fade at edges
+
+        // Footprint: narrower in front, wider in back, organic edges via UV harmonics
         '  float depth = vUv.y;',
-        '  float x = vUv.x * 2.0 - 1.0;',
+        '  float x = vUv.x;',
         '  float wNear = 0.40;',
         '  float wMid  = 0.72;',
         '  float wFar  = 0.64;',
         '  float widthByDepth = mix(wNear, wMid, smoothstep(0.08, 0.55, depth));',
         '  widthByDepth = mix(widthByDepth, wFar, smoothstep(0.62, 1.0, depth));',
-        '  float organicEdge = 0.045 * sin(depth * 9.0 + sin(depth * 3.0) * 1.5)',
-        '                    + 0.025 * sin(depth * 21.0 + x * 2.0);',
+        '  float xCentered = abs(x - 0.5) * 2.0;',
+        '  float organicEdge = 0.045 * sin(depth * 9.28) + 0.025 * sin(depth * 21.0 + x * 2.8);',
         '  float footprint = 1.0 - smoothstep(widthByDepth + organicEdge,',
         '                                     widthByDepth + organicEdge + 0.10,',
-        '                                     abs(x));',
+        '                                     xCentered);',
 
-        // Edge and depth fades
-        '  float edgeFadeX = smoothstep(0.00, 0.12, vUv.x) * smoothstep(1.00, 0.88, vUv.x);',
-        '  float edgeFadeY = smoothstep(0.00, 0.08, vUv.y) * smoothstep(1.00, 0.78, vUv.y);',
+        // Edge fades
+        '  float edgeFadeX = smoothstep(0.00, 0.12, x) * smoothstep(1.00, 0.88, x);',
+        '  float edgeFadeY = smoothstep(0.00, 0.08, depth) * smoothstep(1.00, 0.78, depth);',
 
         // Three-tier geological color hierarchy
-        '  vec3 baseBronze = vec3(0.22, 0.14, 0.04);',  // dark umber/bronze base lattice
-        '  vec3 midAmber   = vec3(0.50, 0.32, 0.09);',  // muted amber secondary
-        '  vec3 goldContour = vec3(0.72, 0.50, 0.16);', // selective gold on primary contours
-        '  vec3 brightGold  = vec3(0.84, 0.62, 0.22);',  // hot highlight for feature peaks
+        '  vec3 baseBronze  = vec3(0.22, 0.14, 0.04);',
+        '  vec3 midAmber    = vec3(0.50, 0.32, 0.09);',
+        '  vec3 goldContour = vec3(0.72, 0.50, 0.16);',
+        '  vec3 brightGold  = vec3(0.84, 0.62, 0.22);',
 
-        // Color selection based on intensity + feature
         '  float colorInput = clamp(vIntensity + vFeature * 0.45, 0.0, 1.0);',
         '  vec3 col = baseBronze;',
         '  col = mix(col, midAmber, smoothstep(0.20, 0.42, colorInput));',
         '  col = mix(col, goldContour, smoothstep(0.42, 0.66, colorInput));',
         '  col = mix(col, brightGold, smoothstep(0.76, 1.00, colorInput));',
 
-        // Alpha: footprint × edge × depth × intensity
         '  float baseAlpha = 0.14 + vIntensity * 0.52;',
         '  float alpha = baseAlpha * footprint * edgeFadeX * edgeFadeY;',
         '  alpha = clamp(alpha, 0.0, 0.96);',
