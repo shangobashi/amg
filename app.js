@@ -117,17 +117,8 @@ function initContactForm() {
     const btn = form.querySelector('button[type="submit"]')
     const original = btn.textContent
     btn.disabled = true
-    btn.textContent = 'Sending...'
-
-    // Simulate submission (replace with real HubSpot/api call)
-    setTimeout(() => {
-      form.style.display = 'none'
-      const success = document.getElementById('contactSuccess')
-      if (success) {
-        success.style.display = 'block'
-        success.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
-    }, 1200)
+    btn.textContent = 'Redirecting...'
+    window.location.href = 'mailto:afriplansolar@yahoo.fr?subject=Afriplan%20Contact%20Form&body=' + encodeURIComponent('Name: ' + (document.getElementById('contactName')?.value || '') + '\nCompany: ' + (document.getElementById('contactCompany')?.value || '') + '\nCountry: ' + (document.getElementById('contactCountry')?.value || '') + '\n\nMessage:\n' + (document.getElementById('contactMessage')?.value || ''))
   })
 }
 

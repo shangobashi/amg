@@ -67,8 +67,8 @@ const i18n = {
       'footer.company': 'Company',
       'footer.legal': 'Legal',
       'footer.privacy': 'Privacy Policy',
-      'footer.tagline': 'Multi-mineral asset, DRC',
-      'footer.rights': 'All data shared under NDA',
+      'footer.tagline': "DRC multi-mineral asset. Four critical minerals at varying stages of verification. Lab-confirmed assays, field indications, and responsible sourcing documentation available for qualified offtake and JV partners.",
+      'footer.rights': "All rights reserved. All data shared under NDA.",
 
       // BERyllium PAGE
       'be.hero.label': 'Beryllium (Be)',
@@ -683,15 +683,17 @@ const i18n = {
 
       // CTA BAND
       'cta.ready': 'Pr\u00eat \u00e0 aller plus loin ?',
-      'cta.sub': 'Package documentaire complet \u2014 certificats d\u2019analyse, journaux op\u00e9rationnels, pack ESG et mod\u00e8le financier \u2014 disponible sous NDA.',
+      'cta.sub': "Package documentaire complet \u2014 certificats d\u2019analyse, journaux op\u00e9rationnels, pack ESG et mod\u00e8le financier \u2014 disponible sous NDA.",
 
       // FOOTER
       'footer.minerals': 'Min\u00e9raux',
       'footer.company': 'Entreprise',
       'footer.legal': 'L\u00e9gal',
       'footer.privacy': 'Politique de Confidentialit\u00e9',
-      'footer.tagline': 'Actif polymin\u00e9ral, RDC',
-      'footer.rights': 'Toutes les donn\u00e9es partag\u00e9es sous NDA',
+      'footer.tagline': "Actif polymin\u00e9ral en RDC. Quatre min\u00e9raux critiques \u00e0 diff\u00e9rents stades de v\u00e9rification. Analyses confirm\u00e9es en laboratoire, indications terrain et documentation d\u2019approvisionnement responsable disponibles pour les partenaires d\u2019achat et JV qualifi\u00e9s.",
+      'footer.rights': "\u00a9 2026 Afriplan Global Solution. Tous droits r\u00e9serv\u00e9s.",
+      'footer.classification': "Classification D \u2014 NDA requis \u2014 Non destin\u00e9 \u00e0 une diffusion publique",
+      'footer.brand-desc': "Actif polymin\u00e9ral en RDC. Quatre min\u00e9raux critiques \u00e0 diff\u00e9rents stades de v\u00e9rification. Analyses confirm\u00e9es en laboratoire, indications terrain et documentation d\u2019approvisionnement responsable disponibles pour les partenaires d\u2019achat et JV qualifi\u00e9s.",
 
       // BERyllium PAGE
       'be.hero.label': 'B\u00e9ryllium (Be)',
