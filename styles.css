@@ -2577,6 +2577,107 @@ button {
   .table-wrap table {
     min-width: 500px;
   }
+
+  /* ── CTA BAND ACTIONS — stack buttons on mobile ──────────────────────────── */
+  .cta-band__actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100%;
+    gap: var(--space-3) !important;
+  }
+
+  .cta-band__actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* ── MINERAL DETAIL GRID — 3-col → 1-col on mobile ─────────────────────── */
+  .mineral-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-4) !important;
+  }
+
+  /* ── MINERAL DETAIL STATS — stack on mobile ─────────────────────────────── */
+  .mineral-detail-stat {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* ── MINERAL GRADE CARD — full width on mobile ─────────────────────────── */
+  .mineral-grade-card {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── MINERAL HERO ICON — center on mobile ──────────────────────────────── */
+  .mineral-hero__icon {
+    width: 64px !important;
+    height: 64px !important;
+    margin-bottom: var(--space-4);
+  }
+
+  /* ── INLINE GRID CATCH-ALL — any [style*="grid-template-columns: 1fr"] → single col ─ */
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── INLINE GRID CATCH-ALL — repeat(2, 1fr) → 1fr ───────────────────── */
+  [style*="grid-template-columns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── FOOTER BRAND — prevent overflow, stack on narrow ─────────────────── */
+  .footer__brand {
+    max-width: 100% !important;
+    flex-wrap: wrap;
+  }
+
+  .footer__brand-symbol {
+    height: 64px !important;
+    width: auto !important;
+  }
+
+  .footer__links-group {
+    min-width: 0;
+  }
+
+  /* ── FORM INPUTS — full width + text overflow fix ───────────────────────── */
+  .form-select {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* ── OPPORTUNITY INTRO — padding fix ───────────────────────────────────── */
+  .opp-intro {
+    padding: var(--space-12) 0 var(--space-8) !important;
+  }
+
+  .opp-intro__title {
+    font-size: clamp(1.5rem, 6vw, 2.5rem) !important;
+  }
+
+  .opp-intro__sub {
+    font-size: 0.9375rem !important;
+  }
+
+  /* ── POLICY CARD — full width on mobile ────────────────────────────────── */
+  .policy-card {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── NDA STEPS — already stacked, but ensure flex is column ─────────────── */
+  .nda-step {
+    flex-direction: column !important;
+    gap: var(--space-3) !important;
+  }
+
+  .nda-step__number {
+    width: 32px !important;
+    height: 32px !important;
+  }
 }
 
 
@@ -2603,6 +2704,47 @@ button {
 
   .stat-block__label {
     font-size: 0.75rem !important;
+  }
+}
+
+/* =============================================================================
+   SMALL PHONE / NARROW — 430px and below
+   ============================================================================= */
+
+@media (max-width: 430px) {
+  /* Stats row → single column on narrow phones */
+  .stats-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Footer: force single column on very narrow screens */
+  .footer__inner {
+    flex-direction: column !important;
+  }
+
+  .footer__brand {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: var(--space-4) !important;
+    max-width: 100% !important;
+  }
+
+  .footer__links {
+    flex-direction: column !important;
+    gap: var(--space-5) !important;
+  }
+
+  .footer__links-group {
+    min-width: 0;
+  }
+
+  /* Mineral detail hero — full stack */
+  .mineral-hero__content {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* CTA band text readable on narrow */
+  .cta-band__text {
+    font-size: 1.25rem !important;
   }
 }
 
