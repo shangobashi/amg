@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contact Afriplan. Request data room access, offtake discussion, or JV partnership. Qualified buyers welcome.">
+  <title>Contact — Afriplan Global Solution</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='5' fill='%23111110'/><text x='16' y='22' text-anchor='middle' font-size='14' font-family='monospace' font-weight='bold' fill='%23C9A454'>BM</text></svg>">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__brand" aria-label="Afriplan Global Solution home">
+        <img class="nav__brand-symbol" src="assets/brand/afriplan-global-symbol-256.png" alt="" aria-hidden="true">
+        <img class="nav__brand-wordmark" src="assets/brand/afriplan-global-wordmark.png" alt="Afriplan Global Solution">
+      </a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="nav__link" data-i18n="nav.overview">Overview</a></li>
+        <li><a href="opportunities.html" class="nav__link" data-i18n="nav.opportunities">Opportunities</a></li>
+        <li><a href="responsible-sourcing.html" class="nav__link" data-i18n="nav.responsible-sourcing">Responsible Sourcing</a></li>
+        <li><a href="data-room.html" class="nav__link" data-i18n="nav.data-room">Data Room</a></li>
+        <li><a href="contact.html" class="nav__link active" data-i18n="nav.contact">Contact</a></li>
+      </ul>
+      <div class="nav__controls">
+        <div class="lang-toggle" role="group" aria-label="Language / Langue">
+          <button class="lang-toggle__btn" data-lang="en">EN</button>
+          <button class="lang-toggle__btn" data-lang="fr">FR</button>
+        </div>
+        <div class="nav__cta">
+          <a href="contact.html" class="btn btn--secondary btn--sm" data-i18n="nav.request-access">Request Access</a>
+        </div>
+      </div>
+      <button class="nav__mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+
+<!-- HEADER -->
+<header class="section" style="padding: var(--space-20) 0 var(--space-12);">
+  <div class="container container--narrow">
+    <div class="section__label">Contact</div>
+    <h1 class="section__title" style="margin-top: var(--space-4);">
+      Let's talk about<br>what you're looking for.
+    </h1>
+    <p class="section__subtitle" style="margin-top: var(--space-4);">
+      All conversations are confidential. We respond to qualified inquiries
+      within 1&ndash;2 business days. Please provide enough context about your
+      interest so we can route your message to the right person.
+    </p>
+  </div>
+</header>
+
+<!-- FORM -->
+<section class="section--tight">
+  <div class="container container--narrow">
+
+    <form id="contactForm">
+      <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <div class="form-group">
+            <label class="form-label" for="contactCompany" data-i18n="ct.form.company-label">Company Name *</label>
+            <input class="form-input" type="text" id="contactCompany" name="contactCompany" placeholder="Trinity Metals SARL" data-i18n="ct.form.company-placeholder" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contactCountry" data-i18n="ct.form.country-label">Country *</label>
+            <select class="form-select" id="contactCountry" name="contactCountry" required>
+              <option value="" data-i18n="ct.form.country-default">Select country...</option>
+              <option>Belgium</option>
+              <option>Canada</option>
+              <option>China</option>
+              <option>Democratic Republic of Congo</option>
+              <option>France</option>
+              <option>Germany</option>
+              <option>India</option>
+              <option>Japan</option>
+              <option>Netherlands</option>
+              <option>DRC</option>
+              <option>South Africa</option>
+              <option>Switzerland</option>
+              <option>Tanzania</option>
+              <option>United Arab Emirates</option>
+              <option>United Kingdom</option>
+              <option>United States</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contactWebsite" data-i18n="ct.form.website-label">Website (optional)</label>
+          <input class="form-input" type="url" id="contactWebsite" name="contactWebsite" placeholder="https://trinitymetals.rw" data-i18n="ct.form.website-placeholder">
+        </div>
+
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: var(--space-5);">
+          <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-5);" data-i18n="ct.form.section-header">What are you looking for?</div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+            <div class="form-group">
+              <label class="form-label" for="contactBuyerType" data-i18n="ct.form.buyer-type-label">Buyer Type *</label>
+              <select class="form-select" id="contactBuyerType" name="contactBuyerType" required>
+                <option value="" data-i18n="ct.form.buyer-type-default">Select buyer type...</option>
+                <option>Offtake Partner</option>
+                <option>Joint Venture Operator</option>
+                <option>Strategic Acquirer</option>
+                <option>Project Finance Investor</option>
+                <option>Equipment-for-Output Partner</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contactMineral" data-i18n="ct.form.mineral-label">Mineral Interest *</label>
+              <select class="form-select" id="contactMineral" name="contactMineral" required>
+                <option value="" data-i18n="ct.form.mineral-default">Select mineral...</option>
+                <option>Beryllium</option>
+                <option>Tungsten / Wolframite</option>
+                <option>Gold</option>
+                <option>Lithium</option>
+                <option>Multiple / Open to options</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-4);">
+            <div class="form-group">
+              <label class="form-label" for="contactUse" data-i18n="ct.form.use-label">Intended Use</label>
+              <select class="form-select" id="contactUse" name="contactUse">
+                <option value="" data-i18n="ct.form.use-default">Select intended use...</option>
+                <option>Direct resale</option>
+                <option>Industrial processing</option>
+                <option>Refining</option>
+                <option>Strategic stockpiling</option>
+                <option>Investment</option>
+                <option>Exploratory</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contactTimeline" data-i18n="ct.form.timeline-label">Timeline</label>
+              <select class="form-select" id="contactTimeline" name="contactTimeline">
+                <option value="" data-i18n="ct.form.timeline-default">Select timeline...</option>
+                <option>Immediate (within 30 days)</option>
+                <option>Short-term (1&ndash;3 months)</option>
+                <option>Medium-term (3&ndash;6 months)</option>
+                <option>Exploratory (no fixed timeline)</option>
+                <option>Conditional on due diligence</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contactVolume" data-i18n="ct.form.volume-label">Estimated Volume</label>
+          <input class="form-input" type="text" id="contactVolume" name="contactVolume" placeholder="e.g. 25t/month or 1x 35kg evaluation" data-i18n="ct.form.volume-placeholder">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contactMessage" data-i18n="ct.form.message-label">Additional Notes</label>
+          <textarea class="form-textarea" id="contactMessage" name="contactMessage" rows="4" placeholder="Please share any specific questions, requirements, or context about your interest..." data-i18n="ct.form.message-placeholder"></textarea>
+        </div>
+
+        <div style="padding: var(--space-4); background: var(--surface-raised); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+          <p style="font-size: 0.8125rem; color: var(--text-tertiary); line-height: 1.6;" data-i18n="ct.form.privacy-note">
+            Your information is used only to route your inquiry and will not be
+            shared with third parties. All conversations are treated as confidential.
+          </p>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--lg" style="align-self: flex-start;" data-i18n="ct.form.submit-btn">
+          Send Inquiry
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </form>
+
+    <!-- SUCCESS STATE -->
+    <div id="contactSuccess" class="success-state" style="display: none;">
+      <div class="success-state__icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <div class="success-state__title" data-i18n="ct.success.title">Inquiry Received</div>
+      <p class="success-state__desc" data-i18n="ct.success.desc">
+        Thank you. We review inquiries within 1&ndash;2 business days and will respond
+        to the email you provided. If your inquiry is urgent, please indicate
+        so in a follow-up message.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ALTERNATIVE ACCESS -->
+<section class="section" style="border-top: 1px solid var(--border-subtle); background: var(--surface-base);">
+  <div class="container container--narrow">
+    <div class="section__label" data-i18n="ct.alt-access.label">Alternative Access</div>
+    <h2 class="section__title" style="margin-top: var(--space-3); margin-bottom: var(--space-4);" data-i18n="ct.alt-access.heading">
+      Already have an NDA in place?
+    </h2>
+    <p style="color: var(--text-secondary); margin-bottom: var(--space-6);" data-i18n="ct.alt-access.body">
+      If you've already executed an NDA and been granted data room access,
+      you can access documents directly through the data room portal.
+    </p>
+    <a href="data-room.html" class="btn btn--secondary" data-i18n="ct.alt-access.btn">
+      Access Data Room
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+    </a>
+  </div>
+</section>
+
+<footer class="footer reveal-fade-up">
+  <div class="container">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <img class="footer__brand-symbol" src="assets/brand/afriplan-global-footer-symbol.png" alt="" aria-hidden="true">
+        <div class="footer__brand-text">
+          <strong>Afriplan Global Solution</strong>
+          <div class="footer__brand-desc">
+            DRC multi-mineral asset. Four critical minerals at varying stages of verification.
+            Lab-confirmed assays, field indications, and responsible sourcing documentation
+            available for qualified offtake and JV partners.
+          </div>
+        </div>
+      </div>
+
+      <div class="footer__links">
+        <div class="footer__links-group">
+          <div class="footer__links-group-title">Portfolio</div>
+          <a href="beryllium.html" class="footer__link">Beryllium</a>
+          <a href="tungsten.html" class="footer__link">Tungsten</a>
+          <a href="gold.html" class="footer__link">Gold</a>
+          <a href="lithium.html" class="footer__link">Lithium</a>
+        </div>
+        <div class="footer__links-group">
+          <div class="footer__links-group-title">Company</div>
+          <a href="index.html" class="footer__link">Overview</a>
+          <a href="opportunities.html" class="footer__link">Opportunities</a>
+          <a href="responsible-sourcing.html" class="footer__link">Responsible Sourcing</a>
+          <a href="data-room.html" class="footer__link">Data Room</a>
+          <a href="contact.html" class="footer__link">Contact</a>
+        </div>
+        <div class="footer__links-group">
+          <div class="footer__links-group-title">Legal</div>
+          <a href="privacy.html" class="footer__link">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>&copy; 2026 Afriplan Global Solution. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+<script src="app.js"></script>
+<script>
+  // Pre-fill from URL params (e.g. contact.html?mineral=tungsten&type=offtake)
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.has('mineral')) {
+      const map = { beryllium: 'Beryllium', tungsten: 'Tungsten / Wolframite', gold: 'Gold', lithium: 'Lithium' }
+      const el = document.getElementById('contactMineral')
+      if (el) el.value = map[params.get('mineral')] || ''
+    }
+    if (params.has('type')) {
+      const el = document.getElementById('contactBuyerType')
+      if (el) el.value = params.get('type') || ''
+    }
+  })
+</script>
+  <script src="i18n.js"></script>
+</body>
+</html>

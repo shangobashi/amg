@@ -1335,6 +1335,17 @@ button {
   z-index: 1;
 }
 
+/* Footer visibility safety net — footer must always render, never be hidden by scroll-reveal */
+.footer,
+.footer.reveal-fade-up,
+.footer.reveal-fade-left,
+.footer.reveal-fade-right,
+.footer.reveal-scale-in {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
 .footer__inner {
   display: flex;
   align-items: flex-start;

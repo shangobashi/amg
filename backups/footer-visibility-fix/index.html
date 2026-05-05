@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Advanced-stage multi-mineral mining asset in the DRC. Beryllium, tungsten, gold, and lithium. Lab-confirmed grades. For qualified offtake and JV partners.">
+  <title>Afriplan Global Solution — DRC Multi-Mineral Asset</title>
+  <link rel="stylesheet" href="styles.css?v=20260505-navbar-footer-consistency-02">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='5' fill='%23111110'/><text x='16' y='22' text-anchor='middle' font-size='14' font-family='monospace' font-weight='bold' fill='%23C9A454'>BM</text></svg>">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="container">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__brand" aria-label="Afriplan Global Solution home">
+        <img class="nav__brand-symbol" src="assets/brand/afriplan-global-symbol-256.png" alt="" aria-hidden="true">
+        <img class="nav__brand-wordmark" src="assets/brand/afriplan-global-wordmark.png" alt="Afriplan Global Solution">
+      </a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="nav__link active" data-i18n="nav.overview">Overview</a></li>
+        <li><a href="opportunities.html" class="nav__link" data-i18n="nav.opportunities">Opportunities</a></li>
+        <li><a href="responsible-sourcing.html" class="nav__link" data-i18n="nav.responsible-sourcing">Responsible Sourcing</a></li>
+        <li><a href="data-room.html" class="nav__link" data-i18n="nav.data-room">Data Room</a></li>
+        <li><a href="contact.html" class="nav__link" data-i18n="nav.contact">Contact</a></li>
+      </ul>
+      <div class="nav__controls">
+        <div class="lang-toggle" role="group" aria-label="Language / Langue">
+          <button class="lang-toggle__btn" data-lang="en">EN</button>
+          <button class="lang-toggle__btn" data-lang="fr">FR</button>
+        </div>
+        <div class="nav__cta">
+          <a href="contact.html" class="btn btn--secondary btn--sm" data-i18n="nav.request-access">Request Access</a>
+        </div>
+      </div>
+<button class="nav__mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <!-- CSS Aurora Layers (z-index: 0 — behind everything) -->
+  <div class="hero__aurora" aria-hidden="true"></div>
+  <div class="hero__aurora-2" aria-hidden="true"></div>
+  <div class="hero__energy-band" aria-hidden="true"></div>
+  <div class="hero__particles" aria-hidden="true"></div>
+  <!-- Canvas2D geological intelligence background (z-index: 3) -->
+  <canvas id="heroBgCanvas"></canvas>
+  <!-- Glow + grain (z-index: 2) -->
+  <div class="hero__glow-overlay" aria-hidden="true"></div>
+  <div class="hero__grain-overlay" aria-hidden="true"></div>
+  <!-- Spatial halo — atmospheric amber glow behind hero content (z-index: 4) -->
+  <div class="hero__spatial-halo" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero__content stagger">
+      <div class="hero__eyebrow">
+        <div class="hero__status-dot"></div>
+        <span class="hero__eyebrow-text" data-i18n="hero.status">Democratic Republic of Congo &nbsp;&middot;&nbsp; Active Operations</span>
+      </div>
+      <h1 class="hero__title">
+        <span data-i18n="hero.title-line1">Four Minerals.</span><br>
+        <em data-i18n="hero.title-line2">One DRC Asset.</em>
+      </h1>
+      <p class="hero__subtitle" data-i18n="hero.subtitle">
+        An advanced-stage artisanal mining portfolio offering lab-confirmed beryllium and tungsten grades,
+        with documented field indications on gold and lithium. Access the full data room under NDA.
+      </p>
+      <div class="hero__actions">
+        <a href="opportunities.html" class="btn btn--primary btn--lg" data-i18n="hero.portfolio">
+          View Mineral Portfolio
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+        <a href="data-room.html" class="btn btn--ghost btn--lg" data-i18n="hero.data-room">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Request Data Room
+        </a>
+      </div>
+      <div class="hero__trust">
+        <div class="hero__trust-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span data-i18n="hero.trust.nda">NDA execution required</span>
+        </div>
+        <div class="hero__trust-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span data-i18n="hero.trust.assays">Lab-confirmed Be + W assays</span>
+        </div>
+        <div class="hero__trust-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span data-i18n="hero.trust.sourcing">Responsible sourcing documented</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- STATS ROW -->
+<section class="section--tight">
+  <div class="container">
+    <div class="stats-row stagger">
+      <div class="stat-block">
+        <div class="stat-block__value">4</div>
+        <div class="stat-block__label">Mineral commodities on record</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-block__value">2</div>
+        <div class="stat-block__label">Lab-confirmed assays</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-block__value">2023</div>
+        <div class="stat-block__label">Operations commenced</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-block__value">DRC</div>
+        <div class="stat-block__label">Asset jurisdiction</div>
+      </div>
+    </div>
+    <p class="disclaimer">
+      <strong>Directional only.</strong> Figures represent documented operational indicators and field readings — not certified reserves.
+      Lab-confirmed assays on beryllium and tungsten carry Evidence IDs. Gold and lithium are field indications pending certified re-assay.
+    </p>
+  </div>
+</section>
+
+<!-- MINERAL PORTFOLIO -->
+<section class="section">
+  <div class="container">
+    <div class="section__header reveal-fade-up">
+      <div class="section__label">Mineral Portfolio</div>
+      <h2 class="section__heading" data-i18n="minerals.heading">Four commodities. Each at a different stage of verification.</h2>
+      <p class="section__subtitle">
+        Lab-confirmed assays on beryllium and tungsten carry the most weight with serious offtake buyers.
+        Gold and lithium require certified re-assay before active marketing.
+      </p>
+    </div>
+
+    <div class="mineral-grid stagger reveal-stagger">
+
+      <!-- BERYLLIUM -->
+      <a href="beryllium.html" class="mineral-tile">
+        <div class="mineral-tile__header">
+          <div class="mineral-tile__icon">Be</div>
+          <span class="badge badge--lab">Lab Confirmed</span>
+        </div>
+        <div>
+          <div class="mineral-tile__name">Beryllium</div>
+          <div class="mineral-tile__grade">BeO 11.77%</div>
+          <div class="mineral-tile__meta">
+            <span class="badge badge--evidence">EVID-PHOTO-0001</span>
+            <span style="font-size: 0.8125rem; color: var(--text-tertiary);">Dec 2025 &middot; Alex Stewart DRC</span>
+          </div>
+        </div>
+        <div class="mineral-tile__footer">
+          <span style="font-size: 0.875rem; color: var(--text-tertiary);">Aerospace &middot; Electronics &middot; Defense</span>
+          <span class="btn btn--ghost btn--sm">View &rarr;</span>
+        </div>
+      </a>
+
+      <!-- TUNGSTEN -->
+      <a href="tungsten.html" class="mineral-tile">
+        <div class="mineral-tile__header">
+          <div class="mineral-tile__icon">W</div>
+          <span class="badge badge--lab">Lab Confirmed</span>
+        </div>
+        <div>
+          <div class="mineral-tile__name">Tungsten (Wolframite)</div>
+          <div class="mineral-tile__grade">WO&#8323; 67.04%</div>
+          <div class="mineral-tile__meta">
+            <span class="badge badge--evidence">EVID-DOC-0001</span>
+            <span style="font-size: 0.8125rem; color: var(--text-tertiary);">Mar 2026 &middot; IMANI / SHEMA</span>
+          </div>
+        </div>
+        <div class="mineral-tile__footer">
+          <span style="font-size: 0.875rem; color: var(--text-tertiary);">Carbide tooling &middot; Steel &middot; Renewable energy</span>
+          <span class="btn btn--ghost btn--sm">View &rarr;</span>
+        </div>
+      </a>
+
+      <!-- GOLD -->
+      <a href="gold.html" class="mineral-tile">
+        <div class="mineral-tile__header">
+          <div class="mineral-tile__icon">Au</div>
+          <span class="badge badge--field">Field Indication</span>
+        </div>
+        <div>
+          <div class="mineral-tile__name">Gold</div>
+          <div class="mineral-tile__grade">Au 97.62%</div>
+          <div class="mineral-tile__meta">
+            <span class="badge badge--evidence">EVID-PHOTO-0002</span>
+            <span style="font-size: 0.8125rem; color: var(--text-tertiary);">Field XRF &middot; Niton reader</span>
+          </div>
+        </div>
+        <div class="mineral-tile__footer">
+          <span style="font-size: 0.875rem; color: var(--text-tertiary);">Refinery &middot; Pre-finance &middot; Bullion</span>
+          <span class="btn btn--ghost btn--sm">View &rarr;</span>
+        </div>
+      </a>
+
+      <!-- LITHIUM -->
+      <a href="lithium.html" class="mineral-tile">
+        <div class="mineral-tile__header">
+          <div class="mineral-tile__icon">Li</div>
+          <span class="badge badge--field">Field Indication</span>
+        </div>
+        <div>
+          <div class="mineral-tile__name">Lithium</div>
+          <div class="mineral-tile__grade">Li&#8322;O 6.40%</div>
+          <div class="mineral-tile__meta">
+            <span class="badge badge--evidence">EVID-PHOTO-0003</span>
+            <span style="font-size: 0.8125rem; color: var(--text-tertiary);">Field LIBS &middot; SciAps reader</span>
+          </div>
+        </div>
+        <div class="mineral-tile__footer">
+          <span style="font-size: 0.875rem; color: var(--text-tertiary);">Battery &middot; Ceramics &middot; Industrial</span>
+          <span class="btn btn--ghost btn--sm">View &rarr;</span>
+        </div>
+      </a>
+
+    </div>
+
+    <p class="disclaimer" style="margin-top: var(--space-8); text-align: center;">
+      Lab-confirmed assays carry significantly more weight with serious offtake buyers than field readings.
+      Gold and lithium require additional certified testing before active marketing is appropriate.
+    </p>
+  </div>
+</section>
+
+<!-- ESG SECTION -->
+<section class="section" style="border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); background: var(--surface-base);">
+  <div class="container">
+    <div class="esg-grid reveal-fade-up">
+      <div>
+        <div class="section__label">Responsible Sourcing</div>
+        <h2 class="section__title" data-i18n="trans.heading">Transparency is a<br>prerequisite, not a differentiator.</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.7; margin-top: var(--space-5); margin-bottom: var(--space-8);">
+          We acknowledge the ESG challenges inherent in DRC artisanal mining. Our approach prioritises
+          transparency, progressive improvement practices, and alignment with OECD Due Diligence Guidance.
+          A documented due-diligence pack is available for qualified buyers.
+        </p>
+        <a href="responsible-sourcing.html" class="btn btn--sage" data-i18n="trans.policy">
+          Review Responsible Sourcing Policy
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+      <div>
+        <ul class="checklist">
+          <li class="checklist__item">
+            <div class="checklist__icon">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            Mercury-aware operations with a documented phase-out commitment
+          </li>
+          <li class="checklist__item">
+            <div class="checklist__icon">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            Traceability from collection point to export port
+          </li>
+          <li class="checklist__item">
+            <div class="checklist__icon">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            OECD Due Diligence Guidance alignment (Annex I & II)
+          </li>
+          <li class="checklist__item">
+            <div class="checklist__icon">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            No child labour — adult artisanal teams, documented roster
+          </li>
+          <li class="checklist__item">
+            <div class="checklist__icon">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            Export documentation and chain-of-custody records available
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA ROOM CTA -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band reveal-fade-up">
+      <div>
+        <div class="cta-band__text" data-i18n="cta.ready">Ready to go deeper?</div>
+        <div class="cta-band__sub" data-i18n="cta.sub">Full documentation package — assay certificates, operational logs, ESG pack, and financial model — available under NDA.</div>
+      </div>
+      <div class="cta-band__actions">
+        <a href="contact.html" class="btn btn--primary" data-i18n="trans.cta">Request Data Room Access</a>
+        <a href="opportunities.html" class="btn btn--ghost" data-i18n="trans.portfolio">View All Opportunities</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer reveal-fade-up">
+  <div class="container">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <img class="footer__brand-symbol" src="assets/brand/afriplan-global-footer-symbol.png" alt="" aria-hidden="true">
+        <div>
+          <strong>Afriplan Global Solution</strong>
+          <div class="footer__brand-desc">
+            Multi-mineral artisanal mining asset in the DRC. Offering verified mineral opportunities
+            to qualified offtake and JV partners under NDA.
+          </div>
+        </div>
+      </div>
+      <div class="footer__links">
+        <div>
+          <div class="footer__links-group-title">Portfolio</div>
+          <a href="beryllium.html" class="footer__link">Beryllium</a>
+          <a href="tungsten.html" class="footer__link">Tungsten</a>
+          <a href="gold.html" class="footer__link">Gold</a>
+          <a href="lithium.html" class="footer__link">Lithium</a>
+        </div>
+        <div>
+          <div class="footer__links-group-title">Company</div>
+          <a href="opportunities.html" class="footer__link">Overview</a>
+          <a href="responsible-sourcing.html" class="footer__link">Responsible Sourcing</a>
+          <a href="data-room.html" class="footer__link">Data Room</a>
+          <a href="contact.html" class="footer__link">Contact</a>
+        </div>
+        <div>
+          <div class="footer__links-group-title">Legal</div>
+          <a href="privacy.html" class="footer__link">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <div class="footer__legal">&copy; 2026 Afriplan Global Solution. All rights reserved.</div>
+      <div class="footer__legal">Classification D &mdash; NDA required &mdash; Not for public distribution</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Mobile nav toggle
+const mobileToggle = document.querySelector('.nav__mobile-toggle');
+const nav = document.querySelector('.nav');
+if (mobileToggle && nav) {
+  mobileToggle.addEventListener('click', () => {
+    const isOpen = nav.classList.toggle('nav--open');
+    mobileToggle.setAttribute('aria-expanded', isOpen);
+  });
+}
+</script>
+  <script src="vendor/three/three.min.js?v=20260503-recovery-01"></script>
+  <script src="hero-bg-3d.js?v=20260505-test-old-shader-01"></script>
+  <script src="animations.js"></script>
+  <script src="i18n.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
