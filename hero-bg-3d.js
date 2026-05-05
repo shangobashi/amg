@@ -278,18 +278,18 @@
     scene.add(stars);
 
     // ────────────────────────────────────────────────────────────────────────
-    // Layer 2: full-width topographic mesh. This is the visual foundation.
-    // It deliberately overfills the viewport horizontally like the screenshot.
+    // Layer 2: shaped topographic mesh. The footprint is actual geometry:
+    // bounded foreground, organic sides, and a long dissolving recession tail.
     // ────────────────────────────────────────────────────────────────────────
     var terrainUniforms = {
       uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2() }
     };
     function createGoldenTerrainGeometry() {
-      var cols = isMobile ? 74 : 132;
-      var rows = isMobile ? 36 : 58;
+      var cols = isMobile ? 78 : 144;
+      var rows = isMobile ? 52 : 92;
       var terrainW = 430;
-      var terrainH = 210;
+      var terrainH = 330;
       var verts = [];
       var uvs = [];
       var indices = [];
@@ -302,34 +302,42 @@
 
       for (var j = 0; j <= rows; j++) {
         var v = j / rows;
-        var baseWidth = mix(0.58, 0.78, ss(0.05, 0.42, v));
-        baseWidth = mix(baseWidth, 0.50, ss(0.62, 1.0, v));
-        var leftNoise = 0.035 * Math.sin(v * 8.0 + 1.7) + 0.020 * Math.sin(v * 21.0);
-        var rightNoise = 0.040 * Math.sin(v * 7.0 + 3.4) + 0.018 * Math.sin(v * 19.0);
+        // v=0 is the distant horizon/tail, v=1 is the foreground. The golden
+        // reference feels infinite because the far rows exist but dissolve;
+        // it does not rely on a chopped last row or a rectangular foreground.
+        var tailOpen = ss(0.00, 0.34, v);
+        var midSwell = ss(0.18, 0.58, v) * (1.0 - ss(0.74, 1.00, v));
+        var nearFrame = ss(0.64, 1.00, v);
+        var baseWidth = 0.20 + tailOpen * 0.34 + midSwell * 0.18 - nearFrame * 0.10;
+        baseWidth = Math.max(0.18, Math.min(0.66, baseWidth));
+        var sideAmp = 0.024 + 0.030 * (1.0 - Math.abs(v - 0.52) * 1.6);
+        var leftNoise = sideAmp * Math.sin(v * 8.0 + 1.7) + 0.018 * Math.sin(v * 23.0);
+        var rightNoise = sideAmp * Math.sin(v * 7.2 + 3.4) + 0.016 * Math.sin(v * 19.0 + 0.8);
         var leftBound = -baseWidth + leftNoise;
         var rightBound = baseWidth + rightNoise;
 
         for (var i = 0; i <= cols; i++) {
           var u = i / cols;
           var xNorm = mix(leftBound, rightBound, u);
-          var x = xNorm * terrainW * 0.5;
+          var edgeBow = (u - 0.5) * (u - 0.5) * (0.030 * Math.sin(v * 10.0 + 0.5));
+          var x = (xNorm + edgeBow) * terrainW * 0.5;
           var y = (v - 0.5) * terrainH;
           verts.push(x, y, 0);
           uvs.push(u, v);
         }
       }
 
-      // Intentionally omit the first and last depth strips so the terrain has
-      // no full-width front or horizon border. The footprint is actual mesh topology,
-      // not a fragment-shader mask.
-      for (var row = 1; row < rows - 1; row++) {
+      // Keep the full tail geometry in the index buffer. Opacity, contour, and
+      // fog fade it out progressively so the eye never sees the mesh terminate.
+      // Omit only the absolute nearest strip to prevent a broad bottom rail.
+      for (var row = 0; row < rows - 1; row++) {
         for (var col = 0; col < cols; col++) {
           var a = row * (cols + 1) + col;
           var b = a + 1;
           var c = (row + 1) * (cols + 1) + col;
           var d = c + 1;
-          indices.push(a, c, b);
-          indices.push(b, c, d);
+          if (row < rows - 3) indices.push(a, c, b);
+          if (row > 0) indices.push(b, c, d);
         }
       }
 
@@ -369,15 +377,21 @@
         '  baseH += bump(p.xy, vec2(-74.0, 22.0), 18.0, 2600.0);',
         '  baseH += bump(p.xy, vec2(58.0, -8.0), 15.0, 2200.0);',
         '  baseH -= bump(p.xy, vec2(4.0, 52.0), 12.0, 3400.0);',
-        '  float breath = 0.92 + 0.08 * sin(t * 0.55 + uv.y * 2.4);',
-        '  float ripple = sin((p.x * 0.020 + p.y * 0.016) - t * 0.42) * 0.85 * smoothstep(0.08, 1.0, uv.y);',
+        '  float tail = smoothstep(0.00, 0.34, uv.y);',
+        '  float foreground = smoothstep(0.62, 1.00, uv.y);',
+        '  float depthPhase = t * 0.18 + uv.y * 10.5;',
+        '  float breath = 0.91 + 0.09 * sin(t * 0.42 + uv.y * 5.4);',
+        '  float downstream = sin((p.y * 0.024) - t * 0.34) * 1.15 + sin((p.x * 0.018 + p.y * 0.013) - t * 0.21) * 0.85;',
+        '  float tailSwell = sin(depthPhase + p.x * 0.014) * 1.75 * (1.0 - foreground) * tail;',
+        '  p.y += (sin(depthPhase * 0.72 + p.x * 0.010) * 1.25) * tail * (1.0 - foreground * 0.65);',
+        '  p.x += sin(depthPhase * 0.46 + p.y * 0.010) * 0.95 * tail * (1.0 - foreground * 0.70);',
         '  vec2 cursor = vec2(uMouse.x * 95.0, uMouse.y * 32.0 - 8.0);',
         '  vec2 delta = p.xy - cursor;',
         '  float dist = length(delta);',
         '  float cursorLift = smoothstep(72.0, 0.0, dist);',
-        '  float h = baseH * breath + ripple + cursorLift * 4.2;',
-        '  float contour = abs(sin(h * 0.44 + t * 0.10));',
-        '  vIntensity = 0.24 + smoothstep(0.48, 1.0, contour) * 0.50 + smoothstep(0.15, 0.82, uv.y) * 0.18 + cursorLift * 0.14;',
+        '  float h = baseH * breath + downstream * tail + tailSwell + cursorLift * 4.2;',
+        '  float contour = abs(sin(h * 0.44 + t * 0.10 + uv.y * 1.6));',
+        '  vIntensity = 0.22 + smoothstep(0.48, 1.0, contour) * 0.48 + smoothstep(0.12, 0.78, uv.y) * 0.16 + tail * 0.10 + cursorLift * 0.14;',
         '  p.z += h;',
         '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
         '}'
@@ -387,20 +401,23 @@
         'varying float vIntensity;',
         'varying vec2 vUv;',
         'void main(){',
-        '  float edgeFade = smoothstep(0.00, 0.10, vUv.x) * smoothstep(1.00, 0.90, vUv.x);',
-        '  float horizonFade = smoothstep(0.03, 0.20, vUv.y);',
-        '  vec3 gold = vec3(0.48, 0.30, 0.06);',
-        '  vec3 bright = vec3(0.66, 0.42, 0.09);',
+        '  float edgeFade = smoothstep(0.00, 0.16, vUv.x) * smoothstep(1.00, 0.84, vUv.x);',
+        '  float tailFade = smoothstep(0.00, 0.34, vUv.y);',
+        '  float nearFade = 1.0 - smoothstep(0.94, 1.00, vUv.y) * 0.55;',
+        '  float horizonDissolve = smoothstep(0.02, 0.26, vUv.y);',
+        '  vec3 gold = vec3(0.46, 0.29, 0.055);',
+        '  vec3 bright = vec3(0.68, 0.43, 0.10);',
         '  vec3 col = mix(gold, bright, vIntensity);',
-        '  float alpha = (0.11 + vIntensity * 0.34) * edgeFade * horizonFade * 0.62;',
+        '  float depthAlpha = 0.72 + smoothstep(0.18, 0.72, vUv.y) * 0.30;',
+        '  float alpha = (0.10 + vIntensity * 0.32) * edgeFade * tailFade * horizonDissolve * nearFade * depthAlpha * 0.58;',
         '  gl_FragColor = vec4(col, alpha);',
         '}'
       ].join('\n')
     });
     var terrain = new THREE.Mesh(terrainGeo, terrainMat);
     terrain.rotation.x = -Math.PI / 2.55;
-    terrain.position.set(0, -114, -70);
-    terrain.scale.set(1.34, 1.10, 1.0);
+    terrain.position.set(0, -126, -86);
+    terrain.scale.set(1.18, 1.08, 1.0);
     terrain.renderOrder = 1;
     scene.add(terrain);
 
@@ -411,7 +428,7 @@
         color: 0x925c12,
         size: isMobile ? 0.34 : 0.46,
         transparent: true,
-        opacity: 0.15,
+        opacity: 0.09,
         depthWrite: false,
         sizeAttenuation: true,
         blending: THREE.NormalBlending
@@ -553,9 +570,10 @@
       canvas.style.height = size.h + 'px';
 
       backdropUniforms.uAspect.value = size.w / size.h;
-      // Make the terrain always overfill the viewport width, including ultra-wide.
-      var aspectBoost = Math.max(1.0, (size.w / Math.max(1, size.h)) / 1.65);
-      terrain.scale.x = 1.34 * aspectBoost;
+      // Preserve a bounded mesh on wide screens; do not let the foreground
+      // become an edge-to-edge floor just because the viewport is ultra-wide.
+      var aspectBoost = Math.max(0.92, Math.min(1.08, (size.w / Math.max(1, size.h)) / 1.70));
+      terrain.scale.x = 1.18 * aspectBoost;
       lattice.scale.copy(terrain.scale);
     }
 
@@ -640,11 +658,11 @@
     requestAnimationFrame(animate);
 
     window.__AFRIPLAN_HERO_WEBGL__ = {
-      version: 'webgl-mesh-shape-01',
+      version: 'webgl-mesh-infinite-recession-01',
       renderer: 'three-webgl',
       iOSSafe: true,
       terrainWidth: 430,
-      terrainSegments: isMobile ? '74x36-shaped' : '132x58-shaped',
+      terrainSegments: isMobile ? '78x52-infinite-tail' : '144x92-infinite-tail',
       fullWidthMesh: false,
       shapedGeometry: true,
       shaderMaskPrimary: false,
