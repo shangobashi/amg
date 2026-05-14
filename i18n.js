@@ -30,6 +30,8 @@ const i18n = {
 
       // MINERALS SECTION
       'minerals.heading': 'Six commodities. Each at a different stage of verification — more deposits await assay.',
+      'future.title': 'Six minerals identified — more discoveries underway,',
+      'future.sub': 'Our exploration program continues across the DRC concession. Additional deposits are being actively sought — stay tuned for updates as our pipeline advances.',
       'be.title': 'Beryl',
       'be.grade': 'BeO 11.77%',
       'be.lab': 'LAB CONFIRMED',
@@ -688,6 +690,8 @@ const i18n = {
 
       // MINERALS SECTION
       'minerals.heading': 'Six mati\u00e8res premi\u00e8res. Chacune \u00e0 un stade diff\u00e9rent de v\u00e9rification \u2014 plus de d\u00e9p\u00f4ts attendent l\u2019analyse.',
+      'future.title': 'Six minéraux identifiés — plus de découvertes en cours.',
+      'future.sub': 'Notre programme d\'exploration se poursuit dans toute la concession RDC. Des dépôts supplémentaires sont activement recherchés — restez à l\'écoute pour les mises à jour à mesure que notre pipeline avance.',
       'be.title': 'Beryl',
       'be.grade': 'BeO 11,77%',
       'be.lab': 'CONFIRM\u00c9 LABO',
