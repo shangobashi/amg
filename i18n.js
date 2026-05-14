@@ -19,9 +19,9 @@ const i18n = {
 
       // HOME
       'hero.status': 'Democratic Republic of Congo \u00b7 Active Operations',
-      'hero.title-line1': 'Four Minerals.',
+      'hero.title-line1': 'Six Minerals.',
       'hero.title-line2': 'One DRC Asset.',
-      'hero.subtitle': 'An advanced-stage artisanal mining portfolio offering lab-confirmed Beryl and tungsten grades, with documented field indications on gold and lithium. Access the full data room under NDA.',
+      'hero.subtitle': 'An advanced-stage multi-mineral portfolio — lab-confirmed Beryl and tungsten, field-indicated gold and lithium, and newly discovered cassiterite and coltan. More deposits await assay. Access the full data room under NDA.',
       'hero.portfolio': 'View Mineral Portfolio',
       'hero.data-room': 'Request Data Room',
       'hero.trust.nda': 'NDA execution required',
@@ -29,7 +29,7 @@ const i18n = {
       'hero.trust.sourcing': 'Responsible sourcing documented',
 
       // MINERALS SECTION
-      'minerals.heading': 'Four commodities. Each at a different stage of verification.',
+      'minerals.heading': 'Six commodities. Each at a different stage of verification — more deposits await assay.',
       'be.title': 'Beryl',
       'be.grade': 'BeO 11.77%',
       'be.lab': 'LAB CONFIRMED',
@@ -67,7 +67,7 @@ const i18n = {
       'footer.company': 'Company',
       'footer.legal': 'Legal',
       'footer.privacy': 'Privacy Policy',
-      'footer.tagline': "DRC multi-mineral asset. Four critical minerals at varying stages of verification. Lab-confirmed assays, field indications, and responsible sourcing documentation available for qualified offtake and JV partners.",
+      'footer.tagline': "DRC multi-mineral asset. Six minerals identified at varying stages of verification — lab-confirmed assays, field indications, and newly discovered deposits. More discoveries underway. Full documentation available for qualified offtake and JV partners.",
       'footer.rights': "All rights reserved. All data shared under NDA.",
 
       // BERyllium PAGE
@@ -272,11 +272,40 @@ const i18n = {
       'li.cta.sub': 'Laboratory ICP analysis from an accredited facility (SGS, ALS, Bureau Veritas) will determine whether this material is suitable for ceramic, industrial, or battery applications.',
       'li.cta.view-tungsten': 'View Tungsten Opportunity (Active)',
 
+      // CASSITERITE PAGE (new)
+      'sn.hero.label': 'Cassiterite (Sn)',
+      'sn.hero.sub': 'Tin ore (SnO\u2082) concentrate — discovered in the DRC, awaiting certified assay.',
+      'sn.status': 'Awaiting Assay',
+      'sn.ctaband.headline': 'Cassiterite offtake opportunity \u2014 assay pending.',
+      'sn.ctaband.sub': 'Newly discovered tin ore concentrate. Certified assay will determine grade and commercial viability.',
+
+      // COLTAN PAGE (new)
+      'ta.hero.label': 'Coltan (Ta/Nb)',
+      'ta.hero.sub': 'Columbite-tantalite ore — discovered in the DRC, awaiting certified assay.',
+      'ta.status': 'Awaiting Assay',
+      'ta.ctaband.headline': 'Coltan offtake opportunity \u2014 assay pending.',
+      'ta.ctaband.sub': 'Newly discovered coltan/columbite-tantalite. Certified assay will determine Ta\u2082O\u2085 grade and commercial viability.',
+
       // OPPORTUNITIES PAGE
       'opp.hero.label': 'Investment Opportunities',
-      'opp.hero.sub': 'Four minerals. Each at a different stage of verification. Select the commodity that matches your offtake or investment thesis.',
+      'opp.hero.sub': 'Six minerals identified across our DRC mining portfolio. Each at a different stage of verification. More deposits are being actively explored. Select the commodity that matches your offtake or investment thesis.',
+
+      // CASSITERITE PAGE (FR)
+      'sn.hero.label': 'Cassitérite (Sn)',
+      'sn.hero.sub': 'Concentré de minerai d\u2019étain (SnO\u2082) \u2014 découvert en RDC, en attente d\u2019analyse certifiée.',
+      'sn.status': 'En attente d\u2019analyse',
+      'sn.ctaband.headline': 'Opportunité d\u2019achat de cassitérite \u2014 analyse en cours.',
+      'sn.ctaband.sub': 'Nouveau concentré de minerai d\u2019étain découvert. L\u2019analyse certifiée déterminera le grade et la viabilité commerciale.',
+
+      // COLTAN PAGE (FR)
+      'ta.hero.label': 'Coltan (Ta/Nb)',
+      'ta.hero.sub': 'Minerai de columbite-tantalite \u2014 découvert en RDC, en attente d\u2019analyse certifiée.',
+      'ta.status': 'En attente d\u2019analyse',
+      'ta.ctaband.headline': 'Opportunité d\u2019achat de coltan \u2014 analyse en cours.',
+      'ta.ctaband.sub': 'Nouveau coltan/columbite-tantalite découvert. L\u2019analyse certifiée déterminera le grade Ta\u2082O\u2085 et la viabilité commerciale.',
+
       // OPPORTUNITIES PAGE
-      'opp.hero.title': 'Four mineral opportunities.',
+      'opp.hero.title': 'Six mineral opportunities.',
       'opp.hero.sub2': 'Lab-confirmed assays carry the most weight with serious offtake buyers. Field indications are directional — they establish prima facie evidence of mineralisation that justifies further due diligence.',
       'opp.tile.view': 'View \u2192',
       'opp.tile.view-all': 'View All Opportunities',
@@ -294,7 +323,7 @@ const i18n = {
       'footer.minerals': 'Minerals',
       'footer.company': 'Company',
       'footer.legal': 'Legal',
-      'footer.tagline': "Actif polymin\u00e9ral en RDC. Quatre min\u00e9raux critiques \u00e0 diff\u00e9rents stades de v\u00e9rification. Analyses confirm\u00e9es en laboratoire, indications terrain et documentation d\u2019approvisionnement responsable disponibles pour les partenaires d\u2019achat et JV qualifi\u00e9s.",
+      'footer.tagline': "Actif polymin\u00e9ral en RDC. Six min\u00e9raux identifi\u00e9s \u00e0 diff\u00e9rents stades de v\u00e9rification \u2014 analyses confirm\u00e9es, indications terrain, et nouveaux d\u00e9p\u00f4ts \u00e0 d\u00e9couvrir. Plus de d\u00e9couvertes en cours. Documentation disponible pour les partenaires qualifi\u00e9s.",
       'footer.rights': '\u00a9 2026 Afriplan Global Solution. Tous droits r\u00e9serv\u00e9s.',
       'footer.privacy': 'Politique de Confidentialit\u00e9',
       // FORM LABELS
@@ -359,6 +388,12 @@ const i18n = {
       'opp.li.tile.label': 'Field Indication',
       'opp.li.tile.desc': 'Field LIBS reading — SciAps reader. Requires certified re-assay for battery-grade qualification. Market pricing highly variable by end-use.',
       'opp.li.tile.footer': 'Battery demand · Certified assay required · Variable pricing',
+      'opp.sn.tile.label': 'Awaiting Assay',
+      'opp.sn.tile.desc': 'Cassiterite (SnO\u2082) \u2014 tin ore concentrate. Discovered in DRC pegmatite belt. Awaiting certified lab assay. Strong demand from soldering, electronics and renewable energy sectors.',
+      'opp.sn.tile.footer': 'Critical mineral \u00b7 Supply deficit \u00b7 Electronics',
+      'opp.ta.tile.label': 'Awaiting Assay',
+      'opp.ta.tile.desc': 'Coltan (columbite-tantalite) \u2014 Ta/Nb ore concentrate. Discovered in DRC but awaiting certified lab assay. Surging demand from 5G, AI data centres, defence, and aerospace.',
+      'opp.ta.tile.footer': 'Strategic mineral \u00b7 5G \u00b7 Defense tech',
 
       // OPPORTUNITIES PAGE — CTA BAND
       'opp.cta.sub': 'The data room contains assay documents, traceability logs, video evidence, and the full due-diligence package — available under NDA.',
@@ -625,7 +660,7 @@ const i18n = {
       'pr.updates.title': 'Policy Updates',
       'pr.updates.p': 'This policy is reviewed annually. Material changes will be communicated via the contact form email address on file.',
       // FOOTER (additional)
-      'footer.brand-desc': 'DRC multi-mineral asset. Four critical minerals at varying stages of verification. Lab-confirmed assays, field indications, and responsible sourcing documentation available for qualified offtake and JV partners.',
+      'footer.brand-desc': 'DRC multi-mineral asset. Six minerals identified at varying stages of verification — lab-confirmed assays, field indications, and newly discovered deposits. More discoveries underway. Responsible sourcing documentation available for qualified offtake and JV partners.',
       'footer.copyright': '© 2026 Afriplan Global Solution. All rights reserved.',
 
     },
@@ -640,10 +675,10 @@ const i18n = {
       'nav.request-access': 'Demander Acc\u00e8s',
 
       // HOME
-      'hero.title-line1': 'Quatre Min\u00e9raux.',
+      'hero.title-line1': 'Six Min\u00e9raux.',
       'hero.title-line2': 'Un Seul Actif RDC.',
       'hero.status': 'R\u00e9publique D\u00e9mocratique du Congo \u00b7 Op\u00e9rations Actives',
-      'hero.title': 'Quatre Min\u00e9raux.\u2009<br>\u2009<em>Un Seul Actif RDC.</em>',
+      'hero.title': 'Six Min\u00e9raux.\u2009<br>\u2009<em>Un Seul Actif RDC.</em>',
       'hero.subtitle': 'Un portefeuille d\'exploitation mini\u00e8re artisanale avanc\u00e9 offrant des teneurs en Beryl et tungst\u00e8ne confirm\u00e9es en laboratoire, avec des indications sur le terrain pour l\'or et le lithium. Acc\u00e9dez \u00e0 la salle de donn\u00e9es sous accord de confidentialit\u00e9.',
       'hero.portfolio': 'Voir le Portefeuille',
       'hero.data-room': 'Demander Acc\u00e8s \u00e0 la Salle de Donn\u00e9es',
@@ -652,7 +687,7 @@ const i18n = {
       'hero.trust.sourcing': 'Approvisionnement responsable document\u00e9',
 
       // MINERALS SECTION
-      'minerals.heading': 'Quatre mati\u00e8res premi\u00e8res. Chacune \u00e0 un stade diff\u00e9rent de v\u00e9rification.',
+      'minerals.heading': 'Six mati\u00e8res premi\u00e8res. Chacune \u00e0 un stade diff\u00e9rent de v\u00e9rification \u2014 plus de d\u00e9p\u00f4ts attendent l\u2019analyse.',
       'be.title': 'Beryl',
       'be.grade': 'BeO 11,77%',
       'be.lab': 'CONFIRM\u00c9 LABO',
@@ -690,10 +725,10 @@ const i18n = {
       'footer.company': 'Entreprise',
       'footer.legal': 'L\u00e9gal',
       'footer.privacy': 'Politique de Confidentialit\u00e9',
-      'footer.tagline': "Actif polymin\u00e9ral en RDC. Quatre min\u00e9raux critiques \u00e0 diff\u00e9rents stades de v\u00e9rification. Analyses confirm\u00e9es en laboratoire, indications terrain et documentation d\u2019approvisionnement responsable disponibles pour les partenaires d\u2019achat et JV qualifi\u00e9s.",
+      'footer.tagline': "Actif polymin\u00e9ral en RDC. Six min\u00e9raux identifi\u00e9s \u00e0 diff\u00e9rents stades de v\u00e9rification \u2014 analyses confirm\u00e9es, indications terrain, et nouveaux d\u00e9p\u00f4ts \u00e0 d\u00e9couvrir. Plus de d\u00e9couvertes en cours. Documentation disponible pour les partenaires qualifi\u00e9s.",
       'footer.rights': "\u00a9 2026 Afriplan Global Solution. Tous droits r\u00e9serv\u00e9s.",
       'footer.classification': "Classification D \u2014 NDA requis \u2014 Non destin\u00e9 \u00e0 une diffusion publique",
-      'footer.brand-desc': "Actif polymin\u00e9ral en RDC. Quatre min\u00e9raux critiques \u00e0 diff\u00e9rents stades de v\u00e9rification. Analyses confirm\u00e9es en laboratoire, indications terrain et documentation d\u2019approvisionnement responsable disponibles pour les partenaires d\u2019achat et JV qualifi\u00e9s.",
+      'footer.brand-desc': "Actif polymin\u00e9ral en RDC. Six min\u00e9raux identifi\u00e9s \u00e0 diff\u00e9rents stades de v\u00e9rification \u2014 analyses confirm\u00e9es, indications terrain, et nouveaux gisements. Plus de d\u00e9couvertes en cours. Documentation disponible pour les partenaires qualifi\u00e9s.",
 
       // BERyllium PAGE
       'be.hero.label': 'Beryl (Be)',
@@ -899,8 +934,8 @@ const i18n = {
 
       // OPPORTUNITIES PAGE
       'opp.hero.label': "Opportunit\u00e9s d'Investissement",
-      'opp.hero.sub': "Quatre min\u00e9raux. Chacun \u00e0 un stade diff\u00e9rent de v\u00e9rification. S\u00e9lectionnez le min\u00e9ral qui correspond \u00e0 votre th\u00e8se d\u2019achat ou d\u2019investissement.",
-      'opp.hero.title': "Quatre opportunit\u00e9s min\u00e9rales.",
+      'opp.hero.sub': "Six min\u00e9raux identifi\u00e9s dans notre portefeuille minier en RDC. Chacun \u00e0 un stade diff\u00e9rent de v\u00e9rification. Plus de d\u00e9p\u00f4ts sont activement explor\u00e9s. S\u00e9lectionnez le min\u00e9ral qui correspond \u00e0 votre th\u00e8se d\u2019achat ou d\u2019investissement.",
+      'opp.hero.title': "Six opportunit\u00e9s min\u00e9rales.",
       'opp.hero.sub2': "Les analyses confirm\u00e9es en laboratoire ont le plus de poids aupr\u00e8s des acheteurs d\u2019offtake s\u00e9rieux. Les indications terrain sont directionnelles \u2014 elles \u00e9tablissent une preuve prima facie de min\u00e9ralisation qui justifie une due diligence suppl\u00e9mentaire.",
       'opp.tile.view': "Voir \u2192",
       'opp.tile.view-all': "Voir Toutes les Opportunit\u00e9s",
@@ -918,7 +953,7 @@ const i18n = {
       'footer.minerals': "Min\u00e9raux",
       'footer.company': "Entreprise",
       'footer.legal': "L\u00e9gal",
-      'footer.tagline': "Actif polymin\u00e9ral en RDC. Quatre min\u00e9raux critiques \u00e0 diff\u00e9rents stades de v\u00e9rification. Analyses confirm\u00e9es en laboratoire, indications terrain et documentation d\u2019approvisionnement responsable disponibles pour les partenaires d\u2019achat et JV qualifi\u00e9s.",
+      'footer.tagline': "Actif polymin\u00e9ral en RDC. Six min\u00e9raux identifi\u00e9s \u00e0 diff\u00e9rents stades de v\u00e9rification \u2014 analyses confirm\u00e9es, indications terrain, et nouveaux d\u00e9p\u00f4ts \u00e0 d\u00e9couvrir. Plus de d\u00e9couvertes en cours. Documentation disponible pour les partenaires qualifi\u00e9s.",
       'footer.rights': "\u00a9 2026 Afriplan Global Solution. Tous droits r\u00e9serv\u00e9s.",
       'footer.privacy': "Politique de Confidentialit\u00e9",
       // FORM LABELS
@@ -944,7 +979,7 @@ const i18n = {
       'dr.form.access.direct-btn': "Acc\u00e9der au portail",
       'dr.updates.heading': "MISES \u00c0 JOUR",
       'dr.updates.title': "Derni\u00e8res Mises \u00e0 Jour",
-      'dr.updates.desc': "Derni\u00e8res mises \u00e0 jour relatives \u00e0 nos quatre actifs miniers.",
+      'dr.updates.desc': "Derni\u00e8res mises \u00e0 jour relatives \u00e0 notre portefeuille de six min\u00e9raux. Plus de d\u00e9couvertes en cours.",
       'dr.updates.view-all': "Voir Tout",
       'dr.updates.evidence-label': "Preuve",
       'dr.updates.mineral-label': "Min\u00e9ral",
@@ -1280,6 +1315,10 @@ const i18n = {
       'ct.form.mineral.option.w': 'Tungst\u00e8ne / Wolframite',
       'ct.form.mineral.option.au': 'Or',
       'ct.form.mineral.option.li': 'Lithium',
+      'ct.form.mineral.option.sn': 'Cassitérite',
+      'ct.form.mineral.option.ta': 'Coltan',
+      'ct.form.mineral.option.sn': 'Cassiterite',
+      'ct.form.mineral.option.ta': 'Coltan',
       'ct.form.mineral.option.multiple': 'Multiple / Ouvert aux options',
 
       // CONTACT FORM — intended use options
@@ -1302,6 +1341,8 @@ const i18n = {
       'dr.form.mineral.option.w': 'Tungst\u00e8ne / Wolframite',
       'dr.form.mineral.option.au': 'Or',
       'dr.form.mineral.option.li': 'Lithium',
+      'dr.form.mineral.option.sn': 'Cassiterite',
+      'dr.form.mineral.option.ta': 'Coltan',
       'dr.form.mineral.option.multiple': 'Multiple / Ouvert aux options',
 
       // DATA ROOM FORM — engagement type options
@@ -1311,7 +1352,7 @@ const i18n = {
       'dr.form.engagement.option.investor': 'Investisseur',
       'dr.form.engagement.option.other': 'Autre',
       // FOOTER (additional)
-      'footer.brand-desc': 'Actif polyminéral en RDC. Quatre minéraux critiques à différents stades de vérification. Analyses confirmées en laboratoire, indications terrain et documentation d’approvisionnement responsable disponibles pour les partenaires d’achat et JV qualifiés.',
+      'footer.brand-desc': 'Actif polyminéral en RDC. Six minéraux identifiés à différents stades de vérification — analyses confirmées, indications terrain, et nouveaux gisements, indications terrain et documentation d’approvisionnement responsable disponibles pour les partenaires d’achat et JV qualifiés.',
       'footer.copyright': '© 2026 Afriplan Global Solution. Tous droits réservés.',
 
 
