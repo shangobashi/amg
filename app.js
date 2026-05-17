@@ -131,17 +131,84 @@ function initDataRoomForm() {
 
   form.addEventListener('submit', e => {
     e.preventDefault()
+    if (!form.checkValidity()) {
+      form.reportValidity()
+      return
+    }
+
+    const lang = document.documentElement.lang === 'fr' ? 'fr' : 'en'
+    const copy = {
+      en: {
+        subject: 'Afriplan Data Room / NDA Request',
+        heading: 'Afriplan Global Solution — Data Room / NDA Request',
+        fullName: 'Full legal name',
+        company: 'Company',
+        title: 'Title / Position',
+        email: 'Business email',
+        phone: 'Phone',
+        country: 'Country',
+        mineralInterest: 'Mineral interest',
+        engagementType: 'Intended engagement',
+        notes: 'Additional notes',
+        none: '(none provided)',
+        opening: 'Opening email...'
+      },
+      fr: {
+        subject: 'Afriplan — Demande NDA / Salle de Données',
+        heading: 'Afriplan Global Solution — Demande NDA / Salle de Données',
+        fullName: 'Nom légal complet',
+        company: 'Entreprise',
+        title: 'Titre / Poste',
+        email: 'Email professionnel',
+        phone: 'Téléphone',
+        country: 'Pays',
+        mineralInterest: 'Intérêt minéral',
+        engagementType: 'Engagement prévu',
+        notes: 'Notes complémentaires',
+        none: '(aucune note fournie)',
+        opening: 'Ouverture de l’email...'
+      }
+    }[lang]
+
+    const getValue = name => (form.elements[name]?.value || '').trim()
+    const getSelectText = name => {
+      const field = form.elements[name]
+      return field?.selectedOptions?.[0]?.textContent.trim() || getValue(name)
+    }
+    const body = [
+      copy.heading,
+      '',
+      `${copy.fullName}: ${getValue('fullName')}`,
+      `${copy.company}: ${getValue('company')}`,
+      `${copy.title}: ${getValue('title')}`,
+      `${copy.email}: ${getValue('email')}`,
+      `${copy.phone}: ${getValue('phone')}`,
+      `${copy.country}: ${getSelectText('country')}`,
+      `${copy.mineralInterest}: ${getSelectText('mineralInterest')}`,
+      `${copy.engagementType}: ${getSelectText('engagementType')}`,
+      '',
+      `${copy.notes}:`,
+      getValue('notes') || copy.none
+    ].join('\n')
+
     const btn = form.querySelector('button[type="submit"]')
-    btn.disabled = true
-    btn.textContent = 'Processing...'
+    if (btn) {
+      btn.disabled = true
+      btn.textContent = copy.opening
+    }
+
+    const mailto = 'mailto:afriplansolar@yahoo.fr'
+      + '?subject=' + encodeURIComponent(copy.subject)
+      + '&body=' + encodeURIComponent(body)
+
+    window.__afriplanLastMailto = mailto
+    window.location.href = mailto
 
     setTimeout(() => {
       form.style.display = 'none'
       const success = document.getElementById('ndaSuccess')
-      if (success) {
-        success.style.display = 'block'
-      }
-    }, 1500)
+      if (success) success.style.display = 'block'
+    }, 350)
   })
 }
 
