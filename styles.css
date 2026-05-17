@@ -1777,6 +1777,21 @@ button {
 }
 
 /* --------------------------------------------------------------------------
+   CARD — elevated confirmation surface
+   -------------------------------------------------------------------------- */
+.card--elevated {
+  align-self: center;
+  width: 100%;
+  max-width: 484px;
+  text-align: center;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-8) var(--space-6);
+}
+
+/* --------------------------------------------------------------------------
    EVIDENCE BOX (mineral detail pages)
    -------------------------------------------------------------------------- */
 .evidence-box {
